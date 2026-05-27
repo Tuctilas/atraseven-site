@@ -1,0 +1,17 @@
+# Dependências Node (só se usar o back-end)
+node_modules/
+
+# Variáveis de ambiente (chave da API)
+.env
+.env.local
+.env.production
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+
+# Editores
+.vscode/
+.idea/
+*.swp
+*.swo
