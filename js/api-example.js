@@ -28,7 +28,7 @@ app.post("/api/diagnostic", async (req, res) => {
 
     const response = await anthropic.messages.create({
       model: "claude-sonnet-4-5",
-      max_tokens: 500,
+      max_tokens: 1024,
       messages: [
         {
           role: "user",

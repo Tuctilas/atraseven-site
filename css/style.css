@@ -425,7 +425,7 @@ section { padding: 7rem 3rem; position: relative; z-index: 1; }
 .ai-toggle-arrow.open { transform: rotate(180deg); }
 
 .ai-panel-wrap { overflow:hidden; max-height:0; transition:max-height 0.5s cubic-bezier(0.16,1,0.3,1); }
-.ai-panel-wrap.open { max-height:900px; }
+.ai-panel-wrap.open { max-height:4000px; }
 
 .ai-panel { background:var(--surface); border:1px solid rgba(212,168,83,0.2); padding:1.5rem; }
 .ai-panel-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:1.2rem; }
