@@ -2,8 +2,8 @@
  * ai-diagnostic.js — Assistente de IA para pré-diagnóstico de redutores
  * ATRA SEVEN
  *
- * Toda comunicação com a Anthropic é feita via backend local:
- * POST http://localhost:3000/api/diagnostic  (ver js/api-example.js)
+ * Toda comunicação com a Anthropic é feita via backend (Render):
+ * POST https://atra-seven-api.onrender.com/api/diagnostic
  */
 
 async function generateDiagnostic() {
@@ -47,7 +47,7 @@ Formate a resposta em 3 blocos curtos:
 • RECOMENDAÇÃO ATRA SEVEN:`;
 
   try {
-    const response = await fetch("http://localhost:3000/api/diagnostic", {
+    const response = await fetch("https://atra-seven-api.onrender.com/api/diagnostic", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message: prompt }),
