@@ -51,8 +51,8 @@
     ctx.translate(x, y);
     ctx.rotate(angle);
 
-    ctx.strokeStyle = '#D4A853';
-    ctx.fillStyle   = 'rgba(212,168,83,0.04)';
+    ctx.strokeStyle = '#5ccda7';
+    ctx.fillStyle   = 'rgba(92,205,167,0.04)';
     ctx.lineWidth   = 1.5;
 
     /* corpo + dentes */
