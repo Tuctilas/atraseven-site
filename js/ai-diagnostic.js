@@ -1,5 +1,5 @@
 /**
- * ai-diagnostic.js — Assistente de IA para pré-diagnóstico de redutores
+ * ai-diagnostic.js | Assistente de IA para pré-diagnóstico de redutores
  * ATRA SEVEN
  *
  * Toda comunicação com a Anthropic é feita via backend (Render):

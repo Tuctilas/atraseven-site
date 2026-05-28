@@ -1,5 +1,5 @@
 /**
- * gear-bg.js — Canvas de engrenagens animadas no fundo (95% ofuscado)
+ * gear-bg.js | Canvas de engrenagens animadas no fundo (95% ofuscado)
  * ATRA SEVEN
  */
 
