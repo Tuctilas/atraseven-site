@@ -1,9 +1,3 @@
-/**
- * main.js — Scroll reveal, AI panel toggle e envio do formulário
- * ATRA SEVEN
- */
-
-/* ── SCROLL REVEAL ── */
 const revealObserver = new IntersectionObserver((entries) => {
   entries.forEach((entry, i) => {
     if (entry.isIntersecting) {
@@ -15,7 +9,6 @@ const revealObserver = new IntersectionObserver((entries) => {
 
 document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
 
-/* ── AI PANEL TOGGLE ── */
 function toggleAI() {
   const wrap  = document.getElementById('ai-panel-wrap');
   const arrow = document.getElementById('ai-arrow');
@@ -24,7 +17,6 @@ function toggleAI() {
   arrow.classList.toggle('open');
 }
 
-/* ── FORM SUBMIT ── */
 function submitForm() {
   const includeCheckbox = document.getElementById('ai-include');
   const aiResultText    = document.getElementById('ai-result-text');
@@ -42,7 +34,5 @@ function submitForm() {
     }
   }
 
-  /* Aqui você pode integrar com um back-end real (ex: fetch para uma API)
-     Por ora exibe uma confirmação simples. */
   alert('Solicitação enviada com sucesso! Entraremos em contato em breve.');
 }
