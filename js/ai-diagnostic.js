@@ -2,9 +2,10 @@
  * ai-diagnostic.js | Assistente de IA para pré-diagnóstico de redutores
  * ATRA SEVEN
  *
- * Toda comunicação com a Anthropic é feita via backend (Render):
- * POST https://atra-seven-api.onrender.com/api/diagnostic
+ * Envia apenas os campos estruturados ao backend — o prompt é montado no servidor.
  */
+
+const FIELD_MAX = { marca: 100, potencia: 50, relacao: 50, horas: 50, adicional: 500 };
 
 async function generateDiagnostic() {
   const tipo      = document.getElementById('ai-tipo')?.value      || '';
@@ -20,6 +21,14 @@ async function generateDiagnostic() {
     return;
   }
 
+  for (const [field, max] of Object.entries(FIELD_MAX)) {
+    const val = { marca, potencia, relacao, horas, adicional }[field];
+    if (val && val.length > max) {
+      alert(`O campo "${field}" excede o limite de ${max} caracteres.`);
+      return;
+    }
+  }
+
   const btn     = document.getElementById('ai-btn');
   const loading = document.getElementById('ai-loading');
   const result  = document.getElementById('ai-result');
@@ -29,36 +38,21 @@ async function generateDiagnostic() {
   loading.style.display = 'flex';
   result.classList.remove('visible');
 
-  const prompt = `Você é um especialista técnico em redutores industriais e acoplamentos da empresa ATRA SEVEN.
-
-Com base nos dados abaixo, gere um pré-diagnóstico técnico objetivo e profissional em português, com no máximo 200 palavras. Inclua: possíveis causas do problema, impacto operacional e recomendação de serviço. Seja direto e técnico.
-
-Equipamento: ${tipo}
-Marca/Fabricante: ${marca     || 'Não informado'}
-Potência: ${potencia          || 'Não informada'}
-Relação de redução: ${relacao || 'Não informada'}
-Horas de operação: ${horas    || 'Não informadas'}
-Sintoma principal: ${sintoma}
-Informações adicionais: ${adicional || 'Nenhuma'}
-
-Formate a resposta em 3 blocos curtos:
-• POSSÍVEIS CAUSAS:
-• IMPACTO OPERACIONAL:
-• RECOMENDAÇÃO ATRA SEVEN:`;
-
   try {
-    const response = await fetch("https://atra-seven-api.onrender.com/api/diagnostic", {
+    const response = await fetch((window.ATRA_API || "https://atra-seven-api.onrender.com") + "/api/diagnostic", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: prompt }),
+      body: JSON.stringify({ tipo, marca, potencia, relacao, horas, sintoma, adicional }),
     });
 
     const data = await response.json();
 
-    resText.textContent = data.reply || "Não foi possível gerar o diagnóstico.";
+    resText.textContent = response.ok
+      ? (data.reply || "Não foi possível gerar o diagnóstico.")
+      : (data.error || "Não foi possível gerar o diagnóstico.");
+
     result.classList.add("visible");
-  } catch (err) {
-    console.error('Erro na IA:', err);
+  } catch {
     resText.textContent = 'Erro ao conectar com o serviço de IA. Verifique sua conexão e tente novamente.';
     result.classList.add('visible');
   } finally {

@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Protótipo · Redutor que se monta no scroll · ATRA SEVEN</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600&family=Barlow+Condensed:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  :root{
+    --bg:#080808; --surface:#101010; --border:rgba(255,255,255,0.07);
+    --accent:#5ccda7; --accent2:#2e9e7a; --text:#F0EDE6; --muted:#888;
+    --font-display:'Bebas Neue',sans-serif;
+    --font-cond:'Barlow Condensed',sans-serif;
+    --font-body:'Barlow',sans-serif;
+  }
+  html{scroll-behavior:smooth;}
+  body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-weight:300;overflow-x:hidden;}
+
+  /* ── Telas de intro/outro só pra dar "scroll" de verdade ── */
+  .pad{
+    min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;padding:2rem;gap:1rem;position:relative;
+  }
+  .eyebrow{
+    font-family:var(--font-cond);text-transform:uppercase;letter-spacing:.28em;
+    font-size:.8rem;color:var(--accent);font-weight:600;
+  }
+  .pad h1{font-family:var(--font-display);font-size:clamp(2.5rem,9vw,7rem);line-height:.92;letter-spacing:.02em;}
+  .pad h1 span{color:var(--accent);}
+  .pad p{max-width:560px;color:var(--muted);line-height:1.6;font-size:1rem;}
+  .hint{
+    position:absolute;bottom:2.5rem;left:50%;transform:translateX(-50%);
+    font-family:var(--font-cond);text-transform:uppercase;letter-spacing:.2em;
+    font-size:.72rem;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:.5rem;
+  }
+  .hint::after{content:'';width:1px;height:34px;background:linear-gradient(var(--accent),transparent);animation:drop 1.6s infinite;}
+  @keyframes drop{0%{opacity:0;transform:scaleY(0);transform-origin:top;}50%{opacity:1;}100%{opacity:0;transform:scaleY(1);transform-origin:bottom;}}
+
+  /* ── A CENA: wrapper alto + palco fixo ── */
+  .scene{position:relative;height:260vh;background:var(--bg);}
+  .stage{position:sticky;top:0;height:100vh;width:100%;overflow:hidden;}
+  #redutor{display:block;width:100%;height:100%;}
+
+  /* legenda das etapas */
+  .caption{
+    position:absolute;left:0;right:0;bottom:9vh;text-align:center;pointer-events:none;
+    padding:0 1.5rem;
+  }
+  .caption .step{
+    font-family:var(--font-cond);text-transform:uppercase;letter-spacing:.3em;
+    font-size:.72rem;color:var(--accent);font-weight:600;margin-bottom:.5rem;
+  }
+  .caption .label{
+    font-family:var(--font-display);font-size:clamp(1.8rem,5vw,3.2rem);line-height:1;
+    transition:opacity .35s ease;
+  }
+  .caption .desc{color:var(--muted);font-size:.92rem;margin-top:.6rem;max-width:440px;margin-inline:auto;line-height:1.5;}
+
+  /* barra de progresso da montagem */
+  .progress{
+    position:absolute;top:0;left:0;height:3px;background:var(--accent);width:0%;
+    box-shadow:0 0 12px var(--accent);z-index:5;
+  }
+  .scene-head{
+    position:absolute;top:3.5vh;left:50%;transform:translateX(-50%);text-align:center;pointer-events:none;
+  }
+  .scene-head .k{
+    font-family:var(--font-cond);text-transform:uppercase;letter-spacing:.28em;font-size:.72rem;color:var(--muted);
+  }
+  .scene-head .t{font-family:var(--font-display);font-size:clamp(1.4rem,4vw,2.2rem);letter-spacing:.04em;}
+  .scene-head .t span{color:var(--accent);}
+
+  .note{
+    position:fixed;bottom:1rem;left:1rem;z-index:50;font-size:.72rem;color:var(--muted);
+    background:rgba(16,16,16,.85);border:1px solid var(--border);padding:.5rem .8rem;border-radius:6px;
+    backdrop-filter:blur(6px);max-width:240px;line-height:1.45;
+  }
+  @media (prefers-reduced-motion:reduce){
+    .hint::after{animation:none;}
+  }
+</style>
+</head>
+<body>
+
+<!-- INTRO -->
+<section class="pad">
+  <div class="eyebrow">Protótipo de animação</div>
+  <h1>ATRA <span>SEVEN</span></h1>
+  <p>Role a página para baixo. Conforme você desce, o redutor se monta peça por peça — e começa a girar quando está completo.</p>
+  <div class="hint">Role para montar</div>
+</section>
+
+<!-- CENA DA MONTAGEM -->
+<section class="scene" id="scene">
+  <div class="stage" id="stage">
+    <div class="progress" id="progress"></div>
+    <div class="scene-head">
+      <div class="k">Montagem técnica</div>
+      <div class="t">REDUTOR DE <span>VELOCIDADE</span></div>
+    </div>
+    <canvas id="redutor"></canvas>
+    <div class="caption">
+      <div class="step" id="cap-step">Etapa 01 / 06</div>
+      <div class="label" id="cap-label">Carcaça</div>
+      <div class="desc" id="cap-desc">A base do equipamento que abriga e protege todo o conjunto.</div>
+    </div>
+  </div>
+</section>
+
+<!-- OUTRO -->
+<section class="pad">
+  <div class="eyebrow">Montagem concluída</div>
+  <h1>PRONTO PRA<br><span>TRABALHAR</span></h1>
+  <p>É essa a sensação: o visitante "monta" um redutor enquanto conhece a empresa, e chega no contato com o equipamento girando. Daqui dá pra emendar direto no botão de orçamento.</p>
+</section>
+
+<div class="note">Protótipo · arte vetorial leve (Canvas 2D). Ajustável: peças, cores, ritmo e legendas.</div>
+
+<script>
+(function(){
+  const scene   = document.getElementById('scene');
+  const canvas  = document.getElementById('redutor');
+  const ctx     = canvas.getContext('2d');
+  const bar      = document.getElementById('progress');
+  const capStep = document.getElementById('cap-step');
+  const capLabel= document.getElementById('cap-label');
+  const capDesc = document.getElementById('cap-desc');
+
+  const ACCENT = '#5ccda7';
+  const reduce = window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+
+  let w=0,h=0,dpr=1;
+  function resize(){
+    dpr = Math.min(window.devicePixelRatio||1, 2);
+    w = canvas.clientWidth; h = canvas.clientHeight;
+    canvas.width = w*dpr; canvas.height = h*dpr;
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  window.addEventListener('resize', resize);
+
+  /* progresso 0..1 dentro da cena */
+  let progress = 0;
+  function readProgress(){
+    const r = scene.getBoundingClientRect();
+    const total = r.height - window.innerHeight;
+    progress = Math.min(Math.max(-r.top/total,0),1);
+  }
+
+  /* utilidades */
+  const clamp=(v,a,b)=>Math.min(Math.max(v,a),b);
+  const part =(p,s,e)=>clamp((p-s)/(e-s),0,1);          // progresso local de uma peça
+  const easeOut=t=>1-Math.pow(1-t,3);
+  const smooth =(a,b,t)=>{t=clamp((t-a)/(b-a),0,1);return t*t*(3-2*t);};
+
+  /* etapas (legenda) */
+  const STAGES=[
+    {t:.00,step:'Etapa 01 / 06',label:'Carcaça',              desc:'A base do equipamento que abriga e protege todo o conjunto.'},
+    {t:.15,step:'Etapa 02 / 06',label:'Eixo de entrada',      desc:'O pinhão recebe o movimento e inicia o trem de engrenagens.'},
+    {t:.32,step:'Etapa 03 / 06',label:'Engrenagem intermediária', desc:'Estágio composto que multiplica a redução de velocidade.'},
+    {t:.50,step:'Etapa 04 / 06',label:'Coroa e eixo de saída', desc:'Entrega o torque ampliado para a máquina acionada.'},
+    {t:.66,step:'Etapa 05 / 06',label:'Tampa e fixação',      desc:'Chave de aperto fecha as tampas de mancal e os parafusos.'},
+    {t:.82,step:'Etapa 06 / 06',label:'Motor em operação',    desc:'O motor acopla e o conjunto gira em condições ideais.'},
+  ];
+  let lastStage=-1;
+  function updateCaption(p){
+    let idx=0;
+    for(let i=0;i<STAGES.length;i++) if(p>=STAGES[i].t) idx=i;
+    if(idx===lastStage) return;
+    lastStage=idx;
+    const s=STAGES[idx];
+    capStep.textContent=s.step; capLabel.textContent=s.label; capDesc.textContent=s.desc;
+  }
+
+  /* ── engrenagem realista (dentes involutos estilizados + cubo + chaveta) ── */
+  function gear(cx,cy,r,teeth,angle,alpha){
+    const toothH=r*0.22, rootR=r-toothH*0.6, rimR=r*0.70, hubR=r*0.30, holeR=r*0.16;
+    ctx.save();
+    ctx.globalAlpha=alpha;
+    ctx.translate(cx,cy); ctx.rotate(angle);
+
+    // sombreado metálico radial
+    const mg=ctx.createRadialGradient(-r*0.25,-r*0.25,r*0.1,0,0,r*1.1);
+    mg.addColorStop(0,'rgba(92,205,167,0.16)');
+    mg.addColorStop(0.6,'rgba(92,205,167,0.05)');
+    mg.addColorStop(1,'rgba(20,40,34,0.25)');
+    ctx.fillStyle=mg;
+
+    // perfil de dentes (flancos chanfrados = mais realista)
+    ctx.strokeStyle=ACCENT; ctx.lineWidth=1.8; ctx.lineJoin='round';
+    ctx.beginPath();
+    for(let i=0;i<teeth;i++){
+      const b=(i/teeth)*Math.PI*2;
+      const a0=b,                       a1=b+(0.30/teeth)*Math.PI*2,
+            a2=b+(0.45/teeth)*Math.PI*2, a3=b+(0.55/teeth)*Math.PI*2,
+            a4=b+(0.70/teeth)*Math.PI*2, a5=b+(1.0/teeth)*Math.PI*2;
+      const pt=(ang,rad)=>[Math.cos(ang)*rad,Math.sin(ang)*rad];
+      let p0=pt(a0,rootR);
+      if(i===0) ctx.moveTo(p0[0],p0[1]); else ctx.lineTo(p0[0],p0[1]);
+      const p1=pt(a1,rootR),p2=pt(a2,r),p3=pt(a3,r),p4=pt(a4,rootR),p5=pt(a5,rootR);
+      ctx.lineTo(p1[0],p1[1]); ctx.lineTo(p2[0],p2[1]);
+      ctx.lineTo(p3[0],p3[1]); ctx.lineTo(p4[0],p4[1]); ctx.lineTo(p5[0],p5[1]);
+    }
+    ctx.closePath(); ctx.fill(); ctx.stroke();
+
+    // aro interno (alívio do disco)
+    ctx.lineWidth=1.4;
+    ctx.beginPath(); ctx.arc(0,0,rimR,0,Math.PI*2); ctx.stroke();
+
+    // furos de alívio no disco
+    const holes=Math.max(4,Math.floor(teeth/4));
+    ctx.fillStyle='rgba(8,8,8,0.55)';
+    for(let i=0;i<holes;i++){
+      const a=(i/holes)*Math.PI*2, rr=(rimR+hubR)/2;
+      ctx.beginPath(); ctx.arc(Math.cos(a)*rr,Math.sin(a)*rr,r*0.07,0,Math.PI*2);
+      ctx.fill(); ctx.stroke();
+    }
+
+    // cubo + furo do eixo + rasgo de chaveta
+    ctx.lineWidth=1.8;
+    ctx.beginPath(); ctx.arc(0,0,hubR,0,Math.PI*2); ctx.stroke();
+    ctx.beginPath(); ctx.arc(0,0,holeR,0,Math.PI*2);
+    ctx.fillStyle='rgba(8,8,8,0.8)'; ctx.fill(); ctx.stroke();
+    ctx.fillStyle=ACCENT;
+    ctx.fillRect(-holeR*0.28,-holeR-holeR*0.5,holeR*0.56,holeR*0.6); // chaveta
+    ctx.restore();
+  }
+
+  function rrect(x,y,rw,rh,rad){
+    ctx.beginPath();
+    ctx.moveTo(x+rad,y);
+    ctx.arcTo(x+rw,y,x+rw,y+rh,rad);
+    ctx.arcTo(x+rw,y+rh,x,y+rh,rad);
+    ctx.arcTo(x,y+rh,x,y,rad);
+    ctx.arcTo(x,y,x+rw,y,rad);
+    ctx.closePath();
+  }
+
+  /* eixo horizontal escalonado (rebaixos) com ponta de acoplamento */
+  function shaft(xIn,xEnd,y,th,alpha,dir){
+    // dir=-1 entrada (esquerda), +1 saída (direita)
+    ctx.save(); ctx.globalAlpha=alpha;
+    const g=ctx.createLinearGradient(0,y-th,0,y+th);
+    g.addColorStop(0,'rgba(92,205,167,0.10)');
+    g.addColorStop(0.5,'rgba(92,205,167,0.30)');
+    g.addColorStop(1,'rgba(20,40,34,0.30)');
+    ctx.fillStyle=g; ctx.strokeStyle=ACCENT; ctx.lineWidth=1.6;
+    const x0=Math.min(xIn,xEnd), x1=Math.max(xIn,xEnd);
+    // corpo principal
+    ctx.beginPath(); rrectPath(x0,y-th/2,x1-x0,th,th*0.25); ctx.fill(); ctx.stroke();
+    // rebaixo (degrau menor) perto do furo
+    const stepX = dir<0 ? x0 : x1-th*1.4;
+    ctx.beginPath(); rrectPath(stepX,y-th*0.32,th*1.4,th*0.64,2); ctx.fill(); ctx.stroke();
+    // ponta de acoplamento (flange) na extremidade externa
+    const fx = dir<0 ? x0 : x1;
+    ctx.beginPath(); ctx.ellipse(fx,y,th*0.5,th*0.95,0,0,Math.PI*2);
+    ctx.fillStyle='rgba(92,205,167,0.12)'; ctx.fill(); ctx.stroke();
+    ctx.restore();
+  }
+  function rrectPath(x,y,rw,rh,rad){
+    ctx.moveTo(x+rad,y);
+    ctx.arcTo(x+rw,y,x+rw,y+rh,rad);
+    ctx.arcTo(x+rw,y+rh,x,y+rh,rad);
+    ctx.arcTo(x,y+rh,x,y,rad);
+    ctx.arcTo(x,y,x+rw,y,rad);
+  }
+
+  /* tampa de mancal: flange circular com parafusos */
+  function bearingCap(cx,cy,r,n,alpha,rot){
+    ctx.save(); ctx.globalAlpha=alpha;
+    ctx.strokeStyle=ACCENT; ctx.lineWidth=2;
+    const g=ctx.createRadialGradient(cx-r*0.3,cy-r*0.3,r*0.1,cx,cy,r);
+    g.addColorStop(0,'rgba(92,205,167,0.12)'); g.addColorStop(1,'rgba(20,40,34,0.18)');
+    ctx.fillStyle=g;
+    ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill(); ctx.stroke();
+    ctx.lineWidth=1.4;
+    ctx.beginPath(); ctx.arc(cx,cy,r*0.62,0,Math.PI*2); ctx.stroke();
+    // parafusos
+    ctx.fillStyle='rgba(92,205,167,0.18)';
+    for(let i=0;i<n;i++){
+      const a=rot+(i/n)*Math.PI*2, br=r*0.81;
+      ctx.beginPath();
+      // cabeça sextavada
+      ctx.save(); ctx.translate(cx+Math.cos(a)*br,cy+Math.sin(a)*br);
+      for(let k=0;k<6;k++){const ka=(k/6)*Math.PI*2;const px=Math.cos(ka)*3.6,py=Math.sin(ka)*3.6;k===0?ctx.moveTo(px,py):ctx.lineTo(px,py);}
+      ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore();
+    }
+    ctx.restore();
+  }
+
+  /* chave combinada (anel + boca) apertando um parafuso — gira em torno do bolt */
+  function wrench(bx,by,len,angle,alpha){
+    ctx.save();
+    ctx.globalAlpha=alpha;
+    ctx.translate(bx,by); ctx.rotate(angle);
+    ctx.lineJoin='round'; ctx.lineCap='round';
+    ctx.strokeStyle=ACCENT; ctx.lineWidth=2;
+    const w=len*0.115, headR=len*0.17;
+    const g=ctx.createLinearGradient(0,-headR,0,headR);
+    g.addColorStop(0,'rgba(150,230,205,0.42)');
+    g.addColorStop(0.5,'rgba(92,205,167,0.20)');
+    g.addColorStop(1,'rgba(30,55,46,0.34)');
+    ctx.fillStyle=g;
+
+    // cabo
+    ctx.beginPath(); rrectPath(0,-w/2,len*0.74,w,w*0.5); ctx.fill(); ctx.stroke();
+
+    // cabeça estrela (anel) sobre o parafuso (na origem)
+    ctx.beginPath(); ctx.arc(0,0,headR,0,Math.PI*2); ctx.fill(); ctx.stroke();
+    ctx.beginPath();
+    for(let k=0;k<6;k++){const a=k/6*Math.PI*2+Math.PI/6,px=Math.cos(a)*headR*0.56,py=Math.sin(a)*headR*0.56;k?ctx.lineTo(px,py):ctx.moveTo(px,py);}
+    ctx.closePath(); ctx.fillStyle='rgba(8,8,8,0.72)'; ctx.fill(); ctx.stroke();
+
+    // boca aberta na outra ponta
+    ctx.save(); ctx.translate(len*0.74,0); ctx.rotate(0.16);
+    ctx.fillStyle=g;
+    const jw=headR*1.05, slot=headR*0.78;
+    ctx.beginPath();
+    ctx.moveTo(0,-headR); ctx.lineTo(jw,-headR); ctx.lineTo(jw,-slot/2);
+    ctx.lineTo(jw*0.42,-slot/2); ctx.lineTo(jw*0.42,slot/2); ctx.lineTo(jw,slot/2);
+    ctx.lineTo(jw,headR); ctx.lineTo(0,headR);
+    ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.restore();
+    ctx.restore();
+  }
+
+  /* motor elétrico acoplado ao eixo de entrada */
+  function motor(rightX,cy,bw,bh,alpha){
+    ctx.save();
+    ctx.globalAlpha=alpha;
+    const x=rightX-bw, y=cy-bh/2;
+    ctx.strokeStyle=ACCENT; ctx.lineWidth=2.4;
+    const g=ctx.createLinearGradient(x,y,x,y+bh);
+    g.addColorStop(0,'rgba(92,205,167,0.16)');
+    g.addColorStop(0.5,'rgba(92,205,167,0.04)');
+    g.addColorStop(1,'rgba(46,158,122,0.12)');
+    ctx.fillStyle=g;
+    // carcaça do motor
+    rrect(x,y,bw,bh,bh*0.22); ctx.fill(); ctx.stroke();
+    // aletas de refrigeração (verticais)
+    ctx.lineWidth=1.2; ctx.globalAlpha=alpha*0.55;
+    for(let i=1;i<10;i++){const fx=x+bw*0.12+i*(bw*0.075);
+      ctx.beginPath(); ctx.moveTo(fx,y+bh*0.12); ctx.lineTo(fx,y+bh*0.88); ctx.stroke();}
+    ctx.globalAlpha=alpha;
+    // tampa do ventilador (esquerda) com ranhuras radiais
+    ctx.lineWidth=2;
+    ctx.beginPath(); ctx.arc(x,cy,bh*0.42,0,Math.PI*2); ctx.stroke();
+    ctx.lineWidth=1.2;
+    for(let i=0;i<10;i++){const a=(i/10)*Math.PI*2;
+      ctx.beginPath(); ctx.moveTo(x+Math.cos(a)*bh*0.14,cy+Math.sin(a)*bh*0.14);
+      ctx.lineTo(x+Math.cos(a)*bh*0.38,cy+Math.sin(a)*bh*0.38); ctx.stroke();}
+    // caixa de bornes (topo)
+    ctx.lineWidth=1.8;
+    rrect(x+bw*0.40,y-bh*0.18,bw*0.28,bh*0.20,3); ctx.fill(); ctx.stroke();
+    // flange de acoplamento (direita) + pés
+    ctx.beginPath(); ctx.moveTo(rightX,cy-bh*0.30); ctx.lineTo(rightX,cy+bh*0.30); ctx.stroke();
+    ctx.lineWidth=2.2;
+    rrect(x+bw*0.12,y+bh,bw*0.24,bh*0.12,3); ctx.stroke();
+    rrect(x+bw*0.64,y+bh,bw*0.24,bh*0.12,3); ctx.stroke();
+    ctx.restore();
+  }
+
+  /* ângulos acumulados (giro suave quando montado) */
+  let angP=0, angM=0, angC=0, lastT=performance.now();
+
+  function draw(){
+    ctx.clearRect(0,0,w,h);
+    const p = reduce ? 1 : progress;
+
+    const cx=w/2, cy=h*0.52;
+    const s = clamp(Math.min(w/780, h/680), 0.55, 1.25);
+
+    /* geometria do TREM de engrenagens (redução em 2 estágios) */
+    const Rc=100*s, Ct=28;                    // coroa (saída)
+    const RmL=68*s, RmLt=20;                  // intermediária grande (engrena o pinhão)
+    const RmS=38*s, RmSt=11;                   // intermediária pequena (engrena a coroa)
+    const Rp=40*s,  Pt=11;                     // pinhão (entrada)
+    const C={x:cx+96*s, y:cy};                 // centro coroa
+    const M={x:C.x-(RmS+Rc)*0.92, y:cy};       // centro intermediária (composta)
+    const P={x:M.x-(Rp+RmL)*0.92, y:cy};       // centro pinhão
+    const shaftInLeft=P.x-Rp-70*s;             // ponta do eixo de entrada (acopla motor)
+
+    /* ---- giro (delta-time) só ramp-up no fim ---- */
+    const now=performance.now(); const dt=Math.min((now-lastT)/1000,0.05); lastT=now;
+    const spin=smooth(0.86,0.98,p);
+    if(!reduce){
+      const d=dt*1.8*spin;
+      angP += d;
+      angM += d*-(Rp/RmL);                     // sentido invertido, mais lento
+      angC += d*((Rp/RmL)*(RmS/Rc));           // ainda mais lento (2º estágio)
+    }
+
+    const hx=(P.x-Rp)-26*s, hy=cy-Rc-26*s;
+    const hw=(C.x+Rc+34*s)-hx, hh=(cy+Rc+42*s)-hy;
+
+    /* ===== 1. CARCAÇA (fundição industrial) ===== */
+    const aHouse=part(p,0.00,0.18), eHouse=easeOut(aHouse);
+    if(aHouse>0){
+      ctx.save();
+      ctx.globalAlpha=eHouse;
+      ctx.translate(0,(1-eHouse)*70*s);
+      // corpo com gradiente de ferro fundido
+      const bg=ctx.createLinearGradient(hx,hy,hx,hy+hh);
+      bg.addColorStop(0,'rgba(92,205,167,0.10)');
+      bg.addColorStop(0.5,'rgba(92,205,167,0.03)');
+      bg.addColorStop(1,'rgba(46,158,122,0.08)');
+      ctx.fillStyle=bg; ctx.strokeStyle=ACCENT; ctx.lineWidth=2.6;
+      rrect(hx,hy,hw,hh,20*s); ctx.fill(); ctx.stroke();
+
+      // linha de divisão tampa/base (split horizontal na altura dos eixos)
+      ctx.lineWidth=1.6; ctx.globalAlpha=eHouse*0.7;
+      ctx.beginPath(); ctx.moveTo(hx+6*s,C.y); ctx.lineTo(hx+hw-6*s,C.y); ctx.stroke();
+      ctx.globalAlpha=eHouse;
+
+      // nervuras de refrigeração (laterais)
+      ctx.lineWidth=1.3; ctx.globalAlpha=eHouse*0.5;
+      for(let i=0;i<5;i++){
+        const rx=hx+14*s+i*7*s;
+        ctx.beginPath(); ctx.moveTo(rx,hy+18*s); ctx.lineTo(rx,C.y-10*s); ctx.stroke();
+        const rx2=hx+hw-14*s-i*7*s;
+        ctx.beginPath(); ctx.moveTo(rx2,hy+18*s); ctx.lineTo(rx2,C.y-10*s); ctx.stroke();
+      }
+      ctx.globalAlpha=eHouse;
+
+      // bossas dos mancais (três eixos)
+      ctx.lineWidth=2;
+      ctx.beginPath(); ctx.arc(P.x,P.y,Rp*0.92,0,Math.PI*2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(M.x,M.y,RmS*0.80,0,Math.PI*2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(C.x,C.y,Rc*0.50,0,Math.PI*2); ctx.stroke();
+
+      // respiro (breather) no topo
+      ctx.lineWidth=1.8;
+      const bvx=hx+hw*0.5;
+      rrect(bvx-5*s,hy-9*s,10*s,10*s,2*s); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.arc(bvx,hy-9*s,4*s,Math.PI,0); ctx.stroke();
+
+      // visor de nível de óleo (canto inferior)
+      const oilx=hx+24*s, oily=hy+hh-26*s;
+      ctx.beginPath(); ctx.arc(oilx,oily,9*s,0,Math.PI*2);
+      ctx.fillStyle='rgba(92,205,167,0.18)'; ctx.fill(); ctx.stroke();
+      ctx.lineWidth=1.2;
+      ctx.beginPath(); ctx.moveTo(oilx-6*s,oily+2*s); ctx.lineTo(oilx+6*s,oily+2*s); ctx.stroke();
+
+      // placa de identificação
+      ctx.lineWidth=1.4; ctx.globalAlpha=eHouse*0.8;
+      rrect(C.x-2*s,hy+hh-30*s,40*s,18*s,2*s); ctx.stroke();
+      ctx.globalAlpha=eHouse;
+
+      // pés de fixação com furos
+      ctx.lineWidth=2.4;
+      const fy=hy+hh;
+      [hx+20*s, hx+hw-66*s].forEach(fx=>{
+        rrect(fx,fy-3*s,48*s,18*s,4*s); ctx.fill(); ctx.stroke();
+        ctx.beginPath(); ctx.arc(fx+12*s,fy+6*s,3.5*s,0,Math.PI*2); ctx.stroke();
+        ctx.beginPath(); ctx.arc(fx+36*s,fy+6*s,3.5*s,0,Math.PI*2); ctx.stroke();
+      });
+      ctx.restore();
+    }
+
+    /* ===== 2. EIXO DE ENTRADA + PINHÃO (entra pela esquerda) ===== */
+    const aIn=part(p,0.15,0.32), eIn=easeOut(aIn);
+    if(aIn>0){
+      ctx.save(); ctx.translate((1-eIn)*-240*s,0);
+      shaft(shaftInLeft, P.x, P.y, 13*s, eIn, -1);
+      gear(P.x,P.y,Rp,Pt,angP,eIn);
+      ctx.restore();
+    }
+
+    /* ===== 3. ENGRENAGEM INTERMEDIÁRIA COMPOSTA (desce do topo) ===== */
+    const aMid=part(p,0.32,0.50), eMid=easeOut(aMid);
+    if(aMid>0){
+      ctx.save(); ctx.translate(0,(1-eMid)*-300*s);
+      gear(M.x,M.y,RmL,RmLt,angM,eMid);          // engrena o pinhão
+      gear(M.x,M.y,RmS,RmSt,angM,eMid);          // engrena a coroa (mesmo eixo)
+      ctx.restore();
+    }
+
+    /* ===== 4. COROA + EIXO DE SAÍDA ===== */
+    const aOut=part(p,0.50,0.66), eOut=easeOut(aOut);
+    if(aOut>0){
+      ctx.save(); ctx.translate((1-eOut)*250*s,0);
+      shaft(C.x, C.x+Rc+86*s, C.y, 18*s, eOut, 1);     // eixo de saída pela direita
+      ctx.restore();
+      ctx.save(); ctx.translate(0,(1-eOut)*-300*s);
+      gear(C.x,C.y,Rc,Ct,angC,eOut);                    // coroa desce
+      ctx.restore();
+    }
+
+    /* ===== 5. TAMPAS DE MANCAL + CHAVE APERTANDO ===== */
+    const aBolt=part(p,0.66,0.82), eBolt=easeOut(aBolt);
+    if(aBolt>0){
+      bearingCap(P.x,P.y,Rp*0.52,6,eBolt,0.4);
+      bearingCap(C.x,C.y,Rc*0.34,8,eBolt,0.2);
+      // parafusos do flange da carcaça (perímetro)
+      ctx.save(); ctx.globalAlpha=eBolt*0.85; ctx.strokeStyle=ACCENT; ctx.fillStyle='rgba(92,205,167,0.18)'; ctx.lineWidth=1.4;
+      [hx+18*s,hx+hw*0.5,hx+hw-18*s].forEach(bxp=>{[hy+12*s,C.y,hy+hh-12*s].forEach(byp=>{
+        ctx.beginPath(); ctx.arc(bxp,byp,3*s,0,Math.PI*2); ctx.fill(); ctx.stroke();
+      });});
+      ctx.restore();
+      // chaves apertando (aparecem no meio da etapa e somem ao final)
+      const wob=Math.sin(aBolt*Math.PI*3), appear=Math.sin(clamp(aBolt,0,1)*Math.PI);
+      // chave na tampa da coroa (parafuso superior)
+      const b1r=Rc*0.34*0.81;
+      wrench(C.x, C.y-b1r, 78*s, -Math.PI*0.30 + wob*0.20, appear);
+      // chave na tampa do pinhão (parafuso à direita)
+      const b2r=Rp*0.52*0.81;
+      wrench(P.x+b2r, P.y, 56*s, Math.PI*0.62 - wob*0.20, appear);
+    }
+
+    /* ===== 6. MOTOR ACOPLA (entra pela esquerda) ===== */
+    const aMot=part(p,0.82,1.00), eMot=easeOut(aMot);
+    if(aMot>0){
+      ctx.save(); ctx.translate((1-eMot)*-300*s,0);
+      motor(shaftInLeft, cy, 132*s, RmL*1.5, eMot);
+      ctx.restore();
+    }
+
+    /* ===== brilho final ===== */
+    const glow=smooth(0.86,1.0,p);
+    if(glow>0){
+      ctx.save();
+      ctx.globalAlpha=glow*0.5;
+      const g=ctx.createRadialGradient(C.x,C.y,Rc*0.3,C.x,C.y,Rc*2.4);
+      g.addColorStop(0,'rgba(92,205,167,0.18)'); g.addColorStop(1,'rgba(92,205,167,0)');
+      ctx.fillStyle=g; ctx.fillRect(0,0,w,h);
+      ctx.restore();
+    }
+  }
+
+  function frame(){
+    readProgress();
+    updateCaption(progress);
+    bar.style.width=(progress*100).toFixed(1)+'%';
+    draw();
+    requestAnimationFrame(frame);
+  }
+
+  resize();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

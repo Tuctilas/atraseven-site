@@ -6,6 +6,9 @@ node_modules/
 .env.local
 .env.production
 
+# Fotos enviadas localmente pela área ADM (em produção ficam no Supabase)
+uploads/
+
 # Sistema operacional
 .DS_Store
 Thumbs.db

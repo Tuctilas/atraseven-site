@@ -17,22 +17,83 @@ function toggleAI() {
   arrow.classList.toggle('open');
 }
 
-function submitForm() {
+async function submitForm() {
   const includeCheckbox = document.getElementById('ai-include');
   const aiResultText    = document.getElementById('ai-result-text');
   const messageArea     = document.getElementById('f-msg');
 
   if (
-    includeCheckbox &&
-    includeCheckbox.checked &&
-    aiResultText &&
-    aiResultText.textContent.trim()
+    includeCheckbox?.checked &&
+    aiResultText?.textContent.trim() &&
+    messageArea &&
+    !messageArea.value.includes('PRÉ-DIAGNÓSTICO IA')
   ) {
-    const diagBlock = '\n\n--- PRÉ-DIAGNÓSTICO IA ---\n' + aiResultText.textContent;
-    if (messageArea && !messageArea.value.includes('PRÉ-DIAGNÓSTICO IA')) {
-      messageArea.value += diagBlock;
-    }
+    messageArea.value += '\n\n--- PRÉ-DIAGNÓSTICO IA ---\n' + aiResultText.textContent;
   }
 
-  alert('Solicitação enviada com sucesso! Entraremos em contato em breve.');
+  const nome     = document.getElementById('f-nome')?.value?.trim()     || '';
+  const empresa  = document.getElementById('f-empresa')?.value?.trim()  || '';
+  const telefone = document.getElementById('f-telefone')?.value?.trim() || '';
+  const email    = document.getElementById('f-email')?.value?.trim()    || '';
+  const setor    = document.getElementById('f-setor')?.value            || '';
+  const mensagem = messageArea?.value?.trim()                           || '';
+
+  if (!nome || !mensagem) {
+    alert('Por favor, preencha pelo menos o nome e a mensagem.');
+    return;
+  }
+
+  const btn = document.querySelector('.contact-form .btn-primary');
+  if (btn) { btn.disabled = true; btn.textContent = 'Enviando...'; }
+
+  try {
+    const response = await fetch((window.ATRA_API || "https://atra-seven-api.onrender.com") + "/api/contact", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nome, empresa, telefone, email, setor, mensagem }),
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      alert('Solicitação enviada com sucesso! Entraremos em contato em breve.');
+      document.getElementById('f-nome').value    = '';
+      document.getElementById('f-empresa').value = '';
+      document.getElementById('f-telefone').value = '';
+      document.getElementById('f-email').value   = '';
+      document.getElementById('f-setor').value   = '';
+      if (messageArea) messageArea.value         = '';
+    } else {
+      alert(data.error || 'Erro ao enviar. Tente novamente.');
+    }
+  } catch {
+    alert('Erro ao conectar com o servidor. Tente novamente.');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Enviar Solicitação'; }
+  }
 }
+
+/* ── serviços: clicar no card abre/fecha o painel de fotos (acordeão) ── */
+(function () {
+  const cards = document.querySelectorAll('.service-card[data-svc]');
+  cards.forEach(card => {
+    card.addEventListener('click', () => {
+      const wasOpen = card.classList.contains('open');
+      cards.forEach(c => c.classList.remove('open'));
+      if (!wasOpen) card.classList.add('open');
+    });
+  });
+})();
+
+/* ── porta dos fundos: 3 cliques no logo "ATRA SEVEN" abrem a área ADM ── */
+(function () {
+  const logo = document.querySelector('.nav-logo');
+  if (!logo) return;
+  let count = 0, timer = null;
+  logo.addEventListener('click', () => {
+    count++;
+    clearTimeout(timer);
+    if (count >= 3) { count = 0; window.location.href = 'adm.html'; return; }
+    timer = setTimeout(() => { count = 0; }, 1200);
+  });
+})();
