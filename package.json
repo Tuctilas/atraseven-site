@@ -2,8 +2,9 @@
   "name": "atraseven",
   "version": "1.0.0",
   "description": "Site institucional da **ATRA SEVEN Assistência Técnica em Redutores e Acoplamentos**.",
-  "main": "index.js",
+  "main": "js/api-example.js",
   "scripts": {
+    "start": "node js/api-example.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

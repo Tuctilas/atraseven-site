@@ -18,3 +18,7 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
+
+# Pastas de build de deploy (Cloudflare Pages)
+dist-site/
+dist-prototipo/
