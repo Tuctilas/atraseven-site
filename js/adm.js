@@ -125,10 +125,10 @@
       $("d-wa-num").value = c.contact?.whatsappNumber || "";
       $("d-email").value = c.contact?.email || "";
       $("d-linkedin").value = c.contact?.linkedin || "";
-      presentation = (c.presentation || []).map((p) => ({ url: p.url, caption: p.caption || "" }));
+      presentation = (c.presentation || []).map((p) => ({ url: p.url, caption: p.caption || "", position: p.position || "50% 50%" }));
       const s = c.services || {};
       for (let i = 1; i <= 6; i++) {
-        services[i] = (Array.isArray(s[i]) ? s[i] : []).map((p) => ({ url: p.url, caption: p.caption || "" }));
+        services[i] = (Array.isArray(s[i]) ? s[i] : []).map((p) => ({ url: p.url, caption: p.caption || "", position: p.position || "50% 50%" }));
       }
       renderPhotos();
     } catch (e) {
@@ -176,8 +176,11 @@
       const el = document.createElement("div");
       el.className = "photo";
 
+      const wrap = document.createElement("div"); wrap.className = "thumb-wrap";
       const img = document.createElement("img");
       img.className = "thumb"; img.src = p.url; img.alt = "";
+      img.style.objectPosition = p.position || "50% 50%";
+      wrap.append(img, mkGrid(p, img));
 
       const pc = document.createElement("div"); pc.className = "pc";
       const cap = document.createElement("input");
@@ -194,11 +197,28 @@
 
       prow.append(left, right, del);
       pc.append(cap, prow);
-      el.append(img, pc);
+      el.append(wrap, pc);
       container.appendChild(el);
     });
   }
 
+  function mkGrid(p, img) {
+    const POS = ["0% 0%", "50% 0%", "100% 0%", "0% 50%", "50% 50%", "100% 50%", "0% 100%", "50% 100%", "100% 100%"];
+    const grid = document.createElement("div"); grid.className = "grid";
+    POS.forEach((pos) => {
+      const cell = document.createElement("button");
+      cell.type = "button"; cell.title = "Enquadrar aqui";
+      if (pos === (p.position || "50% 50%")) cell.classList.add("active");
+      cell.onclick = () => {
+        p.position = pos;
+        img.style.objectPosition = pos;
+        grid.querySelectorAll("button").forEach((b) => b.classList.remove("active"));
+        cell.classList.add("active");
+      };
+      grid.appendChild(cell);
+    });
+    return grid;
+  }
   function mkBtn(label, title) {
     const b = document.createElement("button");
     b.className = "icon-btn"; b.textContent = label; b.title = title; b.type = "button";
@@ -222,7 +242,7 @@
       if (r.status === 401) return onAuthFail();
       const d = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(d.error || "Falha no upload.");
-      arr.push({ url: d.url, caption: "" });
+      arr.push({ url: d.url, caption: "", position: "50% 50%" });
       renderPhotos();
       setMsg(saveMsg, "Imagem adicionada — clique em Salvar para publicar.", "ok");
     } catch (e) {

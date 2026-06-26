@@ -523,7 +523,7 @@ footer { border-top:1px solid var(--border); padding:3rem; display:flex; align-i
 .carousel { position:relative; margin-top:3rem; padding:0 56px; }
 .carousel-viewport { overflow:hidden; }
 .carousel-track { display:flex; gap:1.5rem; transition:transform 0.55s cubic-bezier(0.16,1,0.3,1); will-change:transform; }
-.slide { flex:0 0 calc((100% - 3rem)/3); aspect-ratio:3/4; border-radius:10px; overflow:hidden; background:var(--surface2); box-shadow:0 16px 38px rgba(0,0,0,0.14); }
+.slide { flex:0 0 calc((100% - 3rem)/3); aspect-ratio:4/5; border-radius:10px; overflow:hidden; background:var(--surface2); box-shadow:0 16px 38px rgba(0,0,0,0.14); }
 .slide img { width:100%; height:100%; object-fit:cover; display:block; }
 .slide.ph { display:flex; align-items:center; justify-content:center; background:radial-gradient(circle at 30% 30%, var(--accent-soft), transparent 60%), var(--surface2); box-shadow:none; }
 .slide.ph span { font-size:2.6rem; opacity:0.4; }

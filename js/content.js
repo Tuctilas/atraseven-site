@@ -57,6 +57,7 @@
       } else {
         const img = document.createElement("img");
         img.src = p.url; img.alt = p.caption || "Foto ATRA SEVEN"; img.loading = "lazy";
+        if (p.position) img.style.objectPosition = p.position;
         slide.appendChild(img);
       }
       track.appendChild(slide);
@@ -143,6 +144,7 @@
           fig.className = "svc-photo";
           const img = document.createElement("img");
           img.src = p.url; img.alt = p.caption || "Serviço ATRA SEVEN"; img.loading = "lazy";
+          if (p.position) img.style.objectPosition = p.position;
           fig.appendChild(img);
           if (p.caption) {
             const cap = document.createElement("figcaption");
