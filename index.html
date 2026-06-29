@@ -391,6 +391,17 @@
       </div>
     </div>
 
+    <!-- Honeypot anti-bot: invisível para humanos; se preenchido, descartamos o envio -->
+    <div class="hp-field" aria-hidden="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;">
+      <label>Não preencha este campo</label>
+      <input type="text" id="f-website" name="website" tabindex="-1" autocomplete="off">
+    </div>
+
+    <label class="form-consent" style="display:flex;gap:0.5rem;align-items:flex-start;font-size:0.78rem;color:var(--muted);line-height:1.4;margin:0.6rem 0;">
+      <input type="checkbox" id="f-consent" style="margin-top:0.2rem;flex-shrink:0;">
+      <span>Concordo que a ATRA SEVEN trate os dados informados com a finalidade exclusiva de responder a esta solicitação de orçamento, conforme a <a href="privacidade.html" target="_blank" rel="noopener">Política de Privacidade</a>.</span>
+    </label>
+
     <button class="btn-primary" onclick="submitForm()" style="width:100%;font-size:0.85rem;margin-top:0.5rem;">
       Enviar Solicitação
     </button>
@@ -404,6 +415,7 @@
     <li><a href="#servicos">Serviços</a></li>
     <li><a href="#setores">Setores</a></li>
     <li><a href="#contato">Contato</a></li>
+    <li><a href="privacidade.html">Privacidade</a></li>
   </ul>
   <div class="footer-right">
     <span class="footer-copy">© 2026 ATRA SEVEN · Todos os direitos reservados</span>

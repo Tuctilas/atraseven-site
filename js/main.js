@@ -37,9 +37,21 @@ async function submitForm() {
   const email    = document.getElementById('f-email')?.value?.trim()    || '';
   const setor    = document.getElementById('f-setor')?.value            || '';
   const mensagem = messageArea?.value?.trim()                           || '';
+  const website  = document.getElementById('f-website')?.value          || ''; // honeypot
+  const consent  = document.getElementById('f-consent')?.checked        || false;
 
   if (!nome || !mensagem) {
     alert('Por favor, preencha pelo menos o nome e a mensagem.');
+    return;
+  }
+
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    alert('Por favor, informe um e-mail válido.');
+    return;
+  }
+
+  if (!consent) {
+    alert('Para enviar, é necessário concordar com o tratamento dos seus dados.');
     return;
   }
 
@@ -50,7 +62,7 @@ async function submitForm() {
     const response = await fetch((window.ATRA_API || "https://atra-seven-api.onrender.com") + "/api/contact", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ nome, empresa, telefone, email, setor, mensagem }),
+      body: JSON.stringify({ nome, empresa, telefone, email, setor, mensagem, website, consent }),
     });
 
     const data = await response.json();
@@ -63,6 +75,8 @@ async function submitForm() {
       document.getElementById('f-email').value   = '';
       document.getElementById('f-setor').value   = '';
       if (messageArea) messageArea.value         = '';
+      const consentEl = document.getElementById('f-consent');
+      if (consentEl) consentEl.checked = false;
     } else {
       alert(data.error || 'Erro ao enviar. Tente novamente.');
     }

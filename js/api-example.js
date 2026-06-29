@@ -1,7 +1,6 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import Anthropic from "@anthropic-ai/sdk";
 import rateLimit from "express-rate-limit";
 import nodemailer from "nodemailer";
 import jwt from "jsonwebtoken";
@@ -57,8 +56,6 @@ const contactLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 });
-
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 const DIAGNOSTIC_SYSTEM_PROMPT = `Você é um especialista técnico em redutores industriais e acoplamentos da empresa ATRA SEVEN.
 Analise os dados do equipamento e gere um pré-diagnóstico técnico objetivo em português, com no máximo 200 palavras.
@@ -156,10 +153,23 @@ Formate a resposta em 3 blocos curtos:
 
 app.post("/api/contact", contactLimiter, async (req, res) => {
   try {
-    const { nome, empresa, telefone, email, setor, mensagem } = req.body;
+    const { nome, empresa, telefone, email, setor, mensagem, website, consent } = req.body;
+
+    // Honeypot: campo invisível que só bots preenchem. Respondemos 200 sem enviar nada.
+    if (website) {
+      return res.json({ ok: true });
+    }
 
     if (!nome || !mensagem) {
       return res.status(400).json({ error: "Nome e mensagem são obrigatórios." });
+    }
+
+    if (!consent) {
+      return res.status(400).json({ error: "É necessário consentir com o tratamento dos dados." });
+    }
+
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email))) {
+      return res.status(400).json({ error: "E-mail inválido." });
     }
 
     const validationError = validateFields(req.body, CONTACT_LIMITS);
