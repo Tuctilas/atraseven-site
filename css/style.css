@@ -131,6 +131,33 @@ nav {
 }
 .nav-cta:hover { opacity: 0.85; }
 
+/* ── HAMBÚRGUER (mobile) ── */
+.nav-toggle {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 42px;
+  height: 42px;
+  padding: 9px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  z-index: 210;
+}
+.nav-toggle span {
+  display: block;
+  height: 2px;
+  width: 100%;
+  background: var(--text);
+  border-radius: 2px;
+  transition: transform 0.25s, opacity 0.25s;
+}
+.nav-toggle.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.nav-toggle.open span:nth-child(2) { opacity: 0; }
+.nav-toggle.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+.nav-links-cta { display: none; }
+
 /* ── HERO ── */
 .hero {
   min-height: 100vh;
@@ -286,7 +313,8 @@ nav {
 }
 
 /* ── SECTIONS ── */
-section { padding: 7rem 3rem; position: relative; z-index: 1; }
+section { padding: 7rem 3rem; position: relative; z-index: 1; scroll-margin-top: 80px; }
+html { scroll-behavior: smooth; }
 
 .section-label {
   font-family: var(--font-cond);
@@ -552,9 +580,42 @@ footer { border-top:1px solid var(--border); padding:3rem; display:flex; align-i
 /* ── RESPONSIVE ── */
 @media (max-width: 900px) {
   nav { padding: 1rem 1.5rem; }
-  .nav-links { display: none; }
+  .nav-toggle { display: flex; }
+  .nav-cta { display: none; }
+  /* menu mobile: painel que desce abaixo da barra */
+  .nav-links {
+    position: fixed;
+    top: 58px;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    gap: 0;
+    background: rgba(255,255,255,0.97);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    padding: 0.5rem 0;
+    transform: translateY(-12px);
+    opacity: 0;
+    visibility: hidden;
+    transition: transform 0.25s ease, opacity 0.25s ease, visibility 0.25s;
+  }
+  .nav-links.open {
+    transform: translateY(0);
+    opacity: 1;
+    visibility: visible;
+  }
+  .nav-links li { width: 100%; text-align: center; }
+  .nav-links a {
+    display: block;
+    padding: 0.9rem 1.5rem;
+    font-size: 0.95rem;
+  }
+  .nav-links-cta { display: block; }
+  .nav-links-cta a { color: var(--accent); }
   section { padding: 5rem 1.5rem; }
   .hero { padding: 0 1.5rem 4rem; }
+  /* fundo de engrenagens bem mais suave no celular, p/ não competir com o texto */
+  #redutor-bg { opacity: 0.28; }
   .about, .contact { grid-template-columns: 1fr; gap: 3rem; }
   .services-grid { grid-template-columns: 1fr; }
   .diff-grid { grid-template-columns: 1fr 1fr; }

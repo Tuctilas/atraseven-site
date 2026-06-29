@@ -9,6 +9,25 @@ const revealObserver = new IntersectionObserver((entries) => {
 
 document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
 
+/* ── menu mobile (hambúrguer) ── */
+(function () {
+  const toggle = document.getElementById('nav-toggle');
+  const menu   = document.getElementById('nav-links');
+  if (!toggle || !menu) return;
+  const close = () => {
+    menu.classList.remove('open');
+    toggle.classList.remove('open');
+    toggle.setAttribute('aria-expanded', 'false');
+  };
+  toggle.addEventListener('click', () => {
+    const open = menu.classList.toggle('open');
+    toggle.classList.toggle('open', open);
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  // fecha ao clicar num link do menu
+  menu.querySelectorAll('a').forEach(a => a.addEventListener('click', close));
+})();
+
 function toggleAI() {
   const wrap  = document.getElementById('ai-panel-wrap');
   const arrow = document.getElementById('ai-arrow');
