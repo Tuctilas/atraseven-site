@@ -17,7 +17,7 @@ jobs:
       - name: Build dist-site
         run: |
           mkdir -p dist-site/js dist-site/css
-          cp index.html adm.html dist-site/
+          cp index.html adm.html privacidade.html dist-site/
           cp css/style.css dist-site/css/
           cp js/config.js js/redutor-bg.js js/main.js js/ai-diagnostic.js js/content.js js/adm.js dist-site/js/
           if [ -d data ]; then cp -r data dist-site/data; fi
