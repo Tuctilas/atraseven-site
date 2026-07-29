@@ -28,27 +28,8 @@ document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
   menu.querySelectorAll('a').forEach(a => a.addEventListener('click', close));
 })();
 
-function toggleAI() {
-  const wrap  = document.getElementById('ai-panel-wrap');
-  const arrow = document.getElementById('ai-arrow');
-  if (!wrap || !arrow) return;
-  wrap.classList.toggle('open');
-  arrow.classList.toggle('open');
-}
-
 async function submitForm() {
-  const includeCheckbox = document.getElementById('ai-include');
-  const aiResultText    = document.getElementById('ai-result-text');
-  const messageArea     = document.getElementById('f-msg');
-
-  if (
-    includeCheckbox?.checked &&
-    aiResultText?.textContent.trim() &&
-    messageArea &&
-    !messageArea.value.includes('PRÉ-DIAGNÓSTICO IA')
-  ) {
-    messageArea.value += '\n\n--- PRÉ-DIAGNÓSTICO IA ---\n' + aiResultText.textContent;
-  }
+  const messageArea = document.getElementById('f-msg');
 
   const nome     = document.getElementById('f-nome')?.value?.trim()     || '';
   const empresa  = document.getElementById('f-empresa')?.value?.trim()  || '';

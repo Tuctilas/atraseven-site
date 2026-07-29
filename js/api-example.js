@@ -41,14 +41,6 @@ if (!store.useSupabase) {
   app.use("/uploads", express.static(store.UPLOAD_DIR));
 }
 
-const diagnosticLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 10,
-  message: { error: "Muitas solicitações. Tente novamente em 15 minutos." },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
 const contactLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
   max: 5,
@@ -56,16 +48,6 @@ const contactLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 });
-
-const DIAGNOSTIC_SYSTEM_PROMPT = `Você é um especialista técnico em redutores industriais e acoplamentos da empresa ATRA SEVEN.
-Analise os dados do equipamento e gere um pré-diagnóstico técnico objetivo em português, com no máximo 200 palavras.
-Responda SOMENTE com o diagnóstico técnico nos 3 blocos abaixo, sem saudações ou comentários extras.
-Seja direto e técnico.`;
-
-const FIELD_LIMITS = {
-  tipo: 100, marca: 100, potencia: 50,
-  relacao: 50, horas: 50, sintoma: 200, adicional: 500,
-};
 
 const CONTACT_LIMITS = {
   nome: 100, empresa: 100, telefone: 20,
@@ -85,71 +67,6 @@ function validateFields(body, limits) {
   }
   return null;
 }
-
-app.post("/api/diagnostic", diagnosticLimiter, async (req, res) => {
-  try {
-    const { tipo, marca, potencia, relacao, horas, sintoma, adicional } = req.body;
-
-    if (!tipo || !sintoma) {
-      return res.status(400).json({ error: "Campos 'tipo' e 'sintoma' são obrigatórios." });
-    }
-
-    const validationError = validateFields(req.body, FIELD_LIMITS);
-    if (validationError) return res.status(400).json({ error: validationError });
-
-    const s = {
-      tipo:      sanitize(tipo),
-      marca:     marca      ? sanitize(marca)      : "Não informado",
-      potencia:  potencia   ? sanitize(potencia)   : "Não informada",
-      relacao:   relacao    ? sanitize(relacao)     : "Não informada",
-      horas:     horas      ? sanitize(horas)       : "Não informadas",
-      sintoma:   sanitize(sintoma),
-      adicional: adicional  ? sanitize(adicional)  : "Nenhuma",
-    };
-
-    // Prompt é construído inteiramente no backend — não aceita texto livre do cliente
-    const userMessage = `Equipamento: ${s.tipo}
-Marca/Fabricante: ${s.marca}
-Potência: ${s.potencia}
-Relação de redução: ${s.relacao}
-Horas de operação: ${s.horas}
-Sintoma principal: ${s.sintoma}
-Informações adicionais: ${s.adicional}
-
-Formate a resposta em 3 blocos curtos:
-• POSSÍVEIS CAUSAS:
-• IMPACTO OPERACIONAL:
-• RECOMENDAÇÃO ATRA SEVEN:`;
-
-    const groqRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: process.env.GROQ_MODEL || "llama-3.3-70b-versatile",
-        max_tokens: 512,
-        messages: [
-          { role: "system", content: DIAGNOSTIC_SYSTEM_PROMPT },
-          { role: "user", content: userMessage },
-        ],
-      }),
-    });
-
-    if (!groqRes.ok) {
-      const detail = await groqRes.text();
-      throw new Error(`Groq ${groqRes.status}: ${detail}`);
-    }
-
-    const data = await groqRes.json();
-    const reply = data.choices?.[0]?.message?.content ?? "Sem resposta da IA.";
-    res.json({ reply });
-  } catch (error) {
-    console.error("Erro na chamada Groq:", error.message);
-    res.status(500).json({ error: "Erro interno IA" });
-  }
-});
 
 app.post("/api/contact", contactLimiter, async (req, res) => {
   try {
@@ -214,11 +131,17 @@ app.post("/api/contact", contactLimiter, async (req, res) => {
 const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || process.env.CONTACT_EMAIL || "vendas@atraseven.com.br")
   .toLowerCase().trim();
 const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH || "";
-const JWT_SECRET = process.env.JWT_SECRET || "dev-insecure-secret-trocar-em-producao";
+
+// Sem JWT_SECRET no ambiente, usa um segredo aleatório desta execução: as sessões
+// caem a cada restart, mas nunca há um segredo previsível/público assinando tokens.
+const JWT_SECRET = process.env.JWT_SECRET || crypto.randomBytes(32).toString("hex");
+if (!process.env.JWT_SECRET) {
+  console.warn("[ADM] JWT_SECRET não definido — usando segredo aleatório desta execução. Defina JWT_SECRET no ambiente.");
+}
 
 const adminLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 20,
+  max: 10,
   message: { error: "Muitas tentativas. Tente novamente em 15 minutos." },
   standardHeaders: true,
   legacyHeaders: false,
@@ -230,42 +153,13 @@ const upload = multer({
   fileFilter: (req, file, cb) => cb(null, /^image\//.test(file.mimetype)),
 });
 
-// códigos de uso único em memória: email -> { codeHash, expires, attempts }
-const loginCodes = new Map();
-const sha256 = (s) => crypto.createHash("sha256").update(s).digest("hex");
-
+// Sem hash configurado o acesso fica bloqueado (fail closed) — nunca há senha padrão.
 async function checkPassword(pw) {
-  if (ADMIN_PASSWORD_HASH) return bcrypt.compare(pw, ADMIN_PASSWORD_HASH);
-  // DEV: sem hash configurado — aceita senha de desenvolvimento
-  console.warn("[ADM] ADMIN_PASSWORD_HASH não definido — usando senha de DEV ('atra-dev').");
-  return pw === (process.env.DEV_ADMIN_PASSWORD || "atra-dev");
-}
-
-async function sendCodeEmail(to, code) {
-  const text =
-    `Seu código de acesso à área administrativa da ATRA SEVEN é:\n\n${code}\n\n` +
-    `Válido por 10 minutos. Se você não solicitou, ignore este e-mail.`;
-  if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
-    try {
-      const transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: parseInt(process.env.SMTP_PORT || "587"),
-        secure: false,
-        auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
-      });
-      await transporter.sendMail({
-        from: `"ATRA SEVEN" <${process.env.SMTP_USER}>`,
-        to,
-        subject: "Código de acesso — Área ADM ATRA SEVEN",
-        text,
-      });
-      return;
-    } catch (e) {
-      console.error("[ADM] Falha ao enviar e-mail do código:", e.message);
-    }
+  if (!ADMIN_PASSWORD_HASH) {
+    console.error("[ADM] ADMIN_PASSWORD_HASH não definido — acesso administrativo bloqueado.");
+    return false;
   }
-  // Fallback (dev / SMTP indisponível): mostra o código no log do servidor
-  console.log(`\n========================================\n[ADM] Código de acesso para ${to}: ${code}\n========================================\n`);
+  return bcrypt.compare(pw, ADMIN_PASSWORD_HASH);
 }
 
 function requireAuth(req, res, next) {
@@ -279,7 +173,7 @@ function requireAuth(req, res, next) {
   }
 }
 
-// passo 1: e-mail + senha -> envia código por e-mail
+// e-mail + senha -> token JWT
 app.post("/api/admin/login", adminLimiter, async (req, res) => {
   try {
     const email = String(req.body.email || "").toLowerCase().trim();
@@ -287,35 +181,12 @@ app.post("/api/admin/login", adminLimiter, async (req, res) => {
     const ok = email === ADMIN_EMAIL && (await checkPassword(password));
     if (!ok) return res.status(401).json({ error: "E-mail ou senha inválidos." });
 
-    const code = String(Math.floor(100000 + Math.random() * 900000));
-    loginCodes.set(email, { codeHash: sha256(code), expires: Date.now() + 10 * 60 * 1000, attempts: 0 });
-    await sendCodeEmail(ADMIN_EMAIL, code);
-    res.json({ pending: true });
+    const token = jwt.sign({ sub: email, role: "admin" }, JWT_SECRET, { expiresIn: "8h" });
+    res.json({ token });
   } catch (e) {
     console.error("Erro no login ADM:", e.message);
     res.status(500).json({ error: "Erro interno." });
   }
-});
-
-// passo 2: código -> token JWT
-app.post("/api/admin/verify", adminLimiter, (req, res) => {
-  const email = String(req.body.email || "").toLowerCase().trim();
-  const code = String(req.body.code || "").trim();
-  const entry = loginCodes.get(email);
-  if (!entry || Date.now() > entry.expires) {
-    loginCodes.delete(email);
-    return res.status(400).json({ error: "Código expirado. Faça login novamente." });
-  }
-  if (++entry.attempts > 5) {
-    loginCodes.delete(email);
-    return res.status(429).json({ error: "Muitas tentativas. Faça login novamente." });
-  }
-  if (sha256(code) !== entry.codeHash) {
-    return res.status(401).json({ error: "Código inválido." });
-  }
-  loginCodes.delete(email);
-  const token = jwt.sign({ sub: email, role: "admin" }, JWT_SECRET, { expiresIn: "8h" });
-  res.json({ token });
 });
 
 // conteúdo público

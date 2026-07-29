@@ -1,6 +1,6 @@
 /**
  * adm.js | Área administrativa da ATRA SEVEN.
- * Login: e-mail + senha -> código por e-mail -> token JWT. Edição de contato e fotos.
+ * Login: e-mail + senha -> token JWT. Edição de contato e fotos.
  */
 (function () {
   const API = window.ATRA_API || "https://atra-seven-api.onrender.com";
@@ -16,14 +16,12 @@
   const clearToken = () => sessionStorage.removeItem(TOKEN_KEY);
   const setMsg = (el, text, cls) => { el.textContent = text; el.className = "msg " + (cls || ""); };
 
-  let pendingEmail = "";
   let presentation = [];
   let services = { 1: [], 2: [], 3: [], 4: [], 5: [], 6: [] };
   let uploadCtx = null;   // { type:'pres' } | { type:'svc', id }
 
   const login = $("login"), dash = $("dash"), savebar = $("savebar");
-  const stepCred = $("step-cred"), stepCode = $("step-code"), loginTitle = $("login-title");
-  const loginMsg = $("login-msg"), codeMsg = $("code-msg"), saveMsg = $("save-msg");
+  const loginMsg = $("login-msg"), saveMsg = $("save-msg");
   const fileInput = $("file-input");
 
   document.addEventListener("DOMContentLoaded", () => {
@@ -35,22 +33,14 @@
   /* ════════ LOGIN ════════ */
   function wireLogin() {
     $("btn-login").onclick = doLogin;
-    $("btn-verify").onclick = doVerify;
-    $("btn-back").onclick = () => {
-      stepCode.classList.add("hidden");
-      stepCred.classList.remove("hidden");
-      loginTitle.textContent = "ENTRAR";
-      setMsg(codeMsg, "", "");
-    };
     $("i-pass").addEventListener("keydown", (e) => { if (e.key === "Enter") doLogin(); });
-    $("i-code").addEventListener("keydown", (e) => { if (e.key === "Enter") doVerify(); });
   }
 
   async function doLogin() {
     const email = $("i-email").value.trim();
     const password = $("i-pass").value;
     if (!email || !password) return setMsg(loginMsg, "Preencha e-mail e senha.", "err");
-    const btn = $("btn-login"); btn.disabled = true; setMsg(loginMsg, "Enviando código...", "");
+    const btn = $("btn-login"); btn.disabled = true; setMsg(loginMsg, "Entrando...", "");
     try {
       const r = await fetch(API + "/api/admin/login", {
         method: "POST", headers: { "Content-Type": "application/json" },
@@ -58,33 +48,11 @@
       });
       const d = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(d.error || "Falha no login.");
-      pendingEmail = email;
-      stepCred.classList.add("hidden");
-      stepCode.classList.remove("hidden");
-      loginTitle.textContent = "CÓDIGO";
-      setMsg(loginMsg, "", "");
-      setMsg(codeMsg, "Código enviado para o e-mail cadastrado.", "ok");
-      $("i-code").focus();
-    } catch (e) {
-      setMsg(loginMsg, e.message, "err");
-    } finally { btn.disabled = false; }
-  }
-
-  async function doVerify() {
-    const code = $("i-code").value.trim();
-    if (!code) return setMsg(codeMsg, "Digite o código recebido.", "err");
-    const btn = $("btn-verify"); btn.disabled = true; setMsg(codeMsg, "Verificando...", "");
-    try {
-      const r = await fetch(API + "/api/admin/verify", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: pendingEmail, code }),
-      });
-      const d = await r.json().catch(() => ({}));
-      if (!r.ok) throw new Error(d.error || "Código inválido.");
       setToken(d.token);
+      setMsg(loginMsg, "", "");
       await enterDash();
     } catch (e) {
-      setMsg(codeMsg, e.message, "err");
+      setMsg(loginMsg, e.message, "err");
     } finally { btn.disabled = false; }
   }
 
@@ -93,9 +61,6 @@
     dash.classList.add("hidden");
     savebar.classList.add("hidden");
     login.classList.remove("hidden");
-    stepCode.classList.add("hidden");
-    stepCred.classList.remove("hidden");
-    loginTitle.textContent = "ENTRAR";
     setMsg(loginMsg, "Sessão expirada. Entre novamente.", "err");
   }
 
