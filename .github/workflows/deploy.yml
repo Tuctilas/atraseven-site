@@ -1,0 +1,31 @@
+name: Deploy to Cloudflare Pages
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build dist-site
+        run: |
+          mkdir -p dist-site/js dist-site/css
+          cp index.html adm.html dist-site/
+          cp css/style.css dist-site/css/
+          cp js/config.js js/redutor-bg.js js/main.js js/ai-diagnostic.js js/content.js js/adm.js dist-site/js/
+          if [ -d data ]; then cp -r data dist-site/data; fi
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: atraseven-site
+          directory: dist-site
