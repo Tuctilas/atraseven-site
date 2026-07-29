@@ -1,7 +1,6 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import Anthropic from "@anthropic-ai/sdk";
 import rateLimit from "express-rate-limit";
 import nodemailer from "nodemailer";
 import jwt from "jsonwebtoken";
@@ -24,9 +23,11 @@ const ALLOWED_ORIGINS = [
 ];
 
 const LOCALHOST_RE = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/;
+// Qualquer subdomínio do projeto no Cloudflare Pages (atraseven-site.pages.dev e previews)
+const PAGES_RE = /^https:\/\/([a-z0-9-]+\.)?atraseven-site\.pages\.dev$/;
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || ALLOWED_ORIGINS.includes(origin) || LOCALHOST_RE.test(origin)) return callback(null, true);
+    if (!origin || ALLOWED_ORIGINS.includes(origin) || LOCALHOST_RE.test(origin) || PAGES_RE.test(origin)) return callback(null, true);
     callback(new Error("Origem não permitida pelo CORS"));
   },
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
@@ -55,8 +56,6 @@ const contactLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 });
-
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 const DIAGNOSTIC_SYSTEM_PROMPT = `Você é um especialista técnico em redutores industriais e acoplamentos da empresa ATRA SEVEN.
 Analise os dados do equipamento e gere um pré-diagnóstico técnico objetivo em português, com no máximo 200 palavras.
@@ -122,27 +121,55 @@ Formate a resposta em 3 blocos curtos:
 • IMPACTO OPERACIONAL:
 • RECOMENDAÇÃO ATRA SEVEN:`;
 
-    const response = await anthropic.messages.create({
-      model: "claude-sonnet-4-5",
-      max_tokens: 512,
-      system: DIAGNOSTIC_SYSTEM_PROMPT,
-      messages: [{ role: "user", content: userMessage }],
+    const groqRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: process.env.GROQ_MODEL || "llama-3.3-70b-versatile",
+        max_tokens: 512,
+        messages: [
+          { role: "system", content: DIAGNOSTIC_SYSTEM_PROMPT },
+          { role: "user", content: userMessage },
+        ],
+      }),
     });
 
-    const reply = response.content?.[0]?.text ?? "Sem resposta da IA.";
+    if (!groqRes.ok) {
+      const detail = await groqRes.text();
+      throw new Error(`Groq ${groqRes.status}: ${detail}`);
+    }
+
+    const data = await groqRes.json();
+    const reply = data.choices?.[0]?.message?.content ?? "Sem resposta da IA.";
     res.json({ reply });
   } catch (error) {
-    console.error("Erro na chamada Anthropic:", error.message);
+    console.error("Erro na chamada Groq:", error.message);
     res.status(500).json({ error: "Erro interno IA" });
   }
 });
 
 app.post("/api/contact", contactLimiter, async (req, res) => {
   try {
-    const { nome, empresa, telefone, email, setor, mensagem } = req.body;
+    const { nome, empresa, telefone, email, setor, mensagem, website, consent } = req.body;
+
+    // Honeypot: campo invisível que só bots preenchem. Respondemos 200 sem enviar nada.
+    if (website) {
+      return res.json({ ok: true });
+    }
 
     if (!nome || !mensagem) {
       return res.status(400).json({ error: "Nome e mensagem são obrigatórios." });
+    }
+
+    if (!consent) {
+      return res.status(400).json({ error: "É necessário consentir com o tratamento dos dados." });
+    }
+
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email))) {
+      return res.status(400).json({ error: "E-mail inválido." });
     }
 
     const validationError = validateFields(req.body, CONTACT_LIMITS);

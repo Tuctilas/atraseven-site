@@ -9,6 +9,25 @@ const revealObserver = new IntersectionObserver((entries) => {
 
 document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
 
+/* ── menu mobile (hambúrguer) ── */
+(function () {
+  const toggle = document.getElementById('nav-toggle');
+  const menu   = document.getElementById('nav-links');
+  if (!toggle || !menu) return;
+  const close = () => {
+    menu.classList.remove('open');
+    toggle.classList.remove('open');
+    toggle.setAttribute('aria-expanded', 'false');
+  };
+  toggle.addEventListener('click', () => {
+    const open = menu.classList.toggle('open');
+    toggle.classList.toggle('open', open);
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  // fecha ao clicar num link do menu
+  menu.querySelectorAll('a').forEach(a => a.addEventListener('click', close));
+})();
+
 function toggleAI() {
   const wrap  = document.getElementById('ai-panel-wrap');
   const arrow = document.getElementById('ai-arrow');
@@ -37,9 +56,21 @@ async function submitForm() {
   const email    = document.getElementById('f-email')?.value?.trim()    || '';
   const setor    = document.getElementById('f-setor')?.value            || '';
   const mensagem = messageArea?.value?.trim()                           || '';
+  const website  = document.getElementById('f-website')?.value          || ''; // honeypot
+  const consent  = document.getElementById('f-consent')?.checked        || false;
 
   if (!nome || !mensagem) {
     alert('Por favor, preencha pelo menos o nome e a mensagem.');
+    return;
+  }
+
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    alert('Por favor, informe um e-mail válido.');
+    return;
+  }
+
+  if (!consent) {
+    alert('Para enviar, é necessário concordar com o tratamento dos seus dados.');
     return;
   }
 
@@ -50,7 +81,7 @@ async function submitForm() {
     const response = await fetch((window.ATRA_API || "https://atra-seven-api.onrender.com") + "/api/contact", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ nome, empresa, telefone, email, setor, mensagem }),
+      body: JSON.stringify({ nome, empresa, telefone, email, setor, mensagem, website, consent }),
     });
 
     const data = await response.json();
@@ -63,6 +94,8 @@ async function submitForm() {
       document.getElementById('f-email').value   = '';
       document.getElementById('f-setor').value   = '';
       if (messageArea) messageArea.value         = '';
+      const consentEl = document.getElementById('f-consent');
+      if (consentEl) consentEl.checked = false;
     } else {
       alert(data.error || 'Erro ao enviar. Tente novamente.');
     }
