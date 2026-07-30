@@ -1,0 +1,12 @@
+# Cloudflare Pages · redirecionamentos
+#
+# As páginas do site Weebly antigo estão indexadas no Google. O site novo
+# é uma página única com âncoras, então mapeamos as URLs antigas para a
+# seção equivalente em vez de deixar dar 404.
+# (Os nomes com "ccedil"/"otilde" são como o Weebly gerava os acentos.)
+
+/empresa.html              /#sobre       301
+/serviccedilos.html        /#servicos    301
+/contato.html              /#contato     301
+/clientes.html             /             301
+/informaccedilotildees.html /            301

@@ -1,0 +1,18 @@
+# ============================================================
+# ATRA SEVEN · redirecionamento do domínio raiz para o www
+#
+# ONDE VAI: raiz do public_html no cPanel da HostGator.
+# NÃO faz parte do build do Cloudflare Pages — é o arquivo que
+# fica no servidor da HostGator, no lugar do site Weebly antigo.
+#
+# O e-mail (MX, SPF, subdomínio mail) NÃO é afetado por este
+# arquivo: .htaccess vale só para requisições web do docroot.
+# ============================================================
+
+RewriteEngine On
+
+# Só redireciona quando o host NÃO começa com www — assim, se o www
+# ainda estiver apontando para cá durante a propagação do DNS, não
+# entra em loop infinito de redirecionamento.
+RewriteCond %{HTTP_HOST} !^www\. [NC]
+RewriteRule ^(.*)$ https://www.atraseven.com.br/$1 [R=301,L]
