@@ -1,0 +1,9 @@
+# Configuração do Cloudflare Pages, versionada no repositório.
+#
+# Com pages_build_output_dir definido aqui, o diretório publicado deixa de
+# depender do campo manual no painel do Cloudflare — fica fixo em dist-site.
+# O comando de build (npm run build) continua vindo das configs do projeto.
+
+name = "atraseven-site"
+pages_build_output_dir = "./dist-site"
+compatibility_date = "2026-07-30"
