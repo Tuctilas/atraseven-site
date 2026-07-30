@@ -107,7 +107,13 @@ function normalize(c) {
     (Array.isArray(arr) ? arr : [])
       .filter((p) => p && typeof p.url === "string" && isSafeUrl(p.url))
       .slice(0, max)
-      .map((p) => ({ url: p.url, caption: String(p.caption || "").slice(0, 140) }));
+      .map((p) => ({
+        url: p.url,
+        caption: String(p.caption || "").slice(0, 140),
+        // enquadramento escolhido na área ADM (object-position); sem isto a
+        // escolha do usuário era descartada no salvamento
+        position: isSafePosition(p.position) ? p.position : "50% 50%",
+      }));
   // serviços: objeto por id de serviço (1..6), até 2 fotos cada
   const svcSrc = (c.services && typeof c.services === "object" && !Array.isArray(c.services)) ? c.services : {};
   const services = {};
@@ -130,4 +136,8 @@ function str(v, fallback, max) {
 }
 function isSafeUrl(u) {
   return /^https?:\/\//i.test(u) || u.startsWith("/uploads/");
+}
+// só "X% Y%" — evita injeção de CSS arbitrário via object-position
+function isSafePosition(p) {
+  return typeof p === "string" && /^\d{1,3}% \d{1,3}%$/.test(p);
 }
