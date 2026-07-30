@@ -1,9 +1,15 @@
-# Configuração do Cloudflare Pages, versionada no repositório.
+# Configuração do Cloudflare (Workers Static Assets), versionada no repo.
 #
-# Com pages_build_output_dir definido aqui, o diretório publicado deixa de
-# depender do campo manual no painel do Cloudflare — fica fixo em dist-site.
-# O comando de build (npm run build) continua vindo das configs do projeto.
+# O site é 100% estático, então é publicado como um Worker que serve apenas
+# os arquivos da pasta dist-site — sem código de Worker (sem "main"):
+#   • URL que casa com um arquivo em dist-site  -> serve o arquivo
+#   • URL que não casa                          -> 404
+#
+# O comando de build (npm run build) monta dist-site; o deploy é
+# `npx wrangler deploy`, que lê esta configuração.
 
 name = "atraseven-site"
-pages_build_output_dir = "./dist-site"
 compatibility_date = "2026-07-30"
+
+[assets]
+directory = "./dist-site"
