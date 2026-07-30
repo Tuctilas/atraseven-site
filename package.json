@@ -4,6 +4,7 @@
   "description": "Site institucional da **ATRA SEVEN Assistência Técnica em Redutores e Acoplamentos**.",
   "main": "js/api-example.js",
   "scripts": {
+    "build": "node build.mjs",
     "start": "node js/api-example.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
