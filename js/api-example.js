@@ -25,9 +25,11 @@ const ALLOWED_ORIGINS = [
 const LOCALHOST_RE = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/;
 // Qualquer subdomínio do projeto no Cloudflare Pages (atraseven-site.pages.dev e previews)
 const PAGES_RE = /^https:\/\/([a-z0-9-]+\.)?atraseven-site\.pages\.dev$/;
+// Cloudflare Workers Static Assets — produção e previews do worker atraseven-site
+const WORKERS_RE = /^https:\/\/([a-z0-9-]+-)?atraseven-site\.studiodiamondstudio-diamondstudiodiamond-appstudiodiamondbr\.workers\.dev$/;
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || ALLOWED_ORIGINS.includes(origin) || LOCALHOST_RE.test(origin) || PAGES_RE.test(origin)) return callback(null, true);
+    if (!origin || ALLOWED_ORIGINS.includes(origin) || LOCALHOST_RE.test(origin) || PAGES_RE.test(origin) || WORKERS_RE.test(origin)) return callback(null, true);
     callback(new Error("Origem não permitida pelo CORS"));
   },
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
