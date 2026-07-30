@@ -36,8 +36,8 @@ app.use(cors({
 
 app.use(express.json({ limit: "100kb" }));
 
-// Em modo local (sem Supabase), serve as fotos enviadas a partir da pasta uploads/
-if (!store.useSupabase) {
+// Em modo local (sem R2), serve as fotos enviadas a partir da pasta uploads/
+if (!store.useR2) {
   app.use("/uploads", express.static(store.UPLOAD_DIR));
 }
 
@@ -235,5 +235,5 @@ app.delete("/api/admin/photo", requireAuth, async (req, res) => {
 });
 
 app.listen(process.env.PORT || 3000, () => {
-  console.log("ATRA SEVEN API online" + (store.useSupabase ? " (Supabase)" : " (armazenamento local)"));
+  console.log("ATRA SEVEN API online" + (store.useR2 ? " (R2)" : " (armazenamento local)"));
 });

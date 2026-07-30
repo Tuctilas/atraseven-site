@@ -1,9 +1,14 @@
 /**
  * store.js | Camada de armazenamento do conteúdo editável do site.
  *
- * Em produção (Render): usa Supabase (tabela `site_content` + bucket de Storage)
- *   se SUPABASE_URL e SUPABASE_SERVICE_KEY estiverem definidos.
+ * Em produção (Render): usa Cloudflare R2 (API S3-compatível) se as variáveis
+ *   R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET e
+ *   R2_PUBLIC_BASE estiverem definidas.
  * Em desenvolvimento: fallback local — data/content.json + pasta uploads/.
+ *
+ * O R2 guarda dois tipos de objeto no mesmo bucket:
+ *   • content.json          → contato + lista de fotos (o "banco" do site)
+ *   • photos/<arquivo>       → as imagens enviadas pela área ADM
  */
 import fs from "fs/promises";
 import path from "path";
@@ -26,27 +31,49 @@ export const DEFAULT_CONTENT = {
 };
 
 /* ── seleção do backend ── */
-export const useSupabase = !!(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY);
-const BUCKET = process.env.SUPABASE_BUCKET || "site-photos";
+const R2_ACCOUNT_ID = process.env.R2_ACCOUNT_ID || "";
+const R2_ACCESS_KEY_ID = process.env.R2_ACCESS_KEY_ID || "";
+const R2_SECRET_ACCESS_KEY = process.env.R2_SECRET_ACCESS_KEY || "";
+const R2_BUCKET = process.env.R2_BUCKET || "";
+// URL pública do bucket (r2.dev ou domínio próprio), sem barra no final
+const R2_PUBLIC_BASE = (process.env.R2_PUBLIC_BASE || "").replace(/\/$/, "");
+
+export const useR2 = !!(
+  R2_ACCOUNT_ID && R2_ACCESS_KEY_ID && R2_SECRET_ACCESS_KEY && R2_BUCKET && R2_PUBLIC_BASE
+);
+
+const CONTENT_KEY = "content.json";
 // base pública das imagens locais (precisa ser absoluta: o site roda em outra porta)
 const PUBLIC_BASE = process.env.PUBLIC_BASE || "http://localhost:" + (process.env.PORT || 3000);
 export { UPLOAD_DIR };
 
-let supabase = null;
-if (useSupabase) {
-  const { createClient } = await import("@supabase/supabase-js");
-  supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY, {
-    auth: { persistSession: false },
+let s3 = null;
+let GetObjectCommand, PutObjectCommand, DeleteObjectCommand;
+if (useR2) {
+  const aws = await import("@aws-sdk/client-s3");
+  ({ GetObjectCommand, PutObjectCommand, DeleteObjectCommand } = aws);
+  s3 = new aws.S3Client({
+    region: "auto",
+    endpoint: `https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+    credentials: { accessKeyId: R2_ACCESS_KEY_ID, secretAccessKey: R2_SECRET_ACCESS_KEY },
   });
+} else if (process.env.NODE_ENV === "production") {
+  console.warn("[store] R2 não configurado — usando armazenamento local EFÊMERO. " +
+    "Em produção, defina R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET e R2_PUBLIC_BASE.");
 }
 
 /* ── conteúdo (telefone, e-mail, fotos) ── */
 export async function getContent() {
-  if (useSupabase) {
-    const { data, error } = await supabase
-      .from("site_content").select("data").eq("id", 1).maybeSingle();
-    if (error) throw error;
-    return normalize(data?.data);
+  if (useR2) {
+    try {
+      const r = await s3.send(new GetObjectCommand({ Bucket: R2_BUCKET, Key: CONTENT_KEY }));
+      const text = await r.Body.transformToString();
+      return normalize(JSON.parse(text));
+    } catch (e) {
+      // objeto ainda não existe (primeiro acesso) → devolve o padrão
+      if (e.name === "NoSuchKey" || e.$metadata?.httpStatusCode === 404) return { ...DEFAULT_CONTENT };
+      throw e;
+    }
   }
   try {
     const raw = await fs.readFile(DATA_FILE, "utf8");
@@ -58,10 +85,11 @@ export async function getContent() {
 
 export async function saveContent(content) {
   const data = normalize(content);
-  if (useSupabase) {
-    const { error } = await supabase
-      .from("site_content").upsert({ id: 1, data, updated_at: new Date().toISOString() });
-    if (error) throw error;
+  if (useR2) {
+    await s3.send(new PutObjectCommand({
+      Bucket: R2_BUCKET, Key: CONTENT_KEY,
+      Body: JSON.stringify(data), ContentType: "application/json",
+    }));
     return data;
   }
   await fs.mkdir(path.dirname(DATA_FILE), { recursive: true });
@@ -72,12 +100,10 @@ export async function saveContent(content) {
 /* ── imagens ── */
 export async function saveImage(buffer, name, mime) {
   const filename = Date.now() + "-" + name;
-  if (useSupabase) {
-    const { error } = await supabase.storage
-      .from(BUCKET).upload("photos/" + filename, buffer, { contentType: mime, upsert: false });
-    if (error) throw error;
-    const { data } = supabase.storage.from(BUCKET).getPublicUrl("photos/" + filename);
-    return data.publicUrl;
+  if (useR2) {
+    const key = "photos/" + filename;
+    await s3.send(new PutObjectCommand({ Bucket: R2_BUCKET, Key: key, Body: buffer, ContentType: mime }));
+    return R2_PUBLIC_BASE + "/" + key;
   }
   await fs.mkdir(UPLOAD_DIR, { recursive: true });
   await fs.writeFile(path.join(UPLOAD_DIR, filename), buffer);
@@ -86,12 +112,10 @@ export async function saveImage(buffer, name, mime) {
 
 export async function deleteImage(url) {
   if (!url) return;
-  if (useSupabase) {
-    const marker = "/" + BUCKET + "/";
-    const i = url.indexOf(marker);
-    if (i === -1) return;
-    const key = url.slice(i + marker.length);
-    await supabase.storage.from(BUCKET).remove([key]);
+  if (useR2) {
+    if (!url.startsWith(R2_PUBLIC_BASE + "/")) return;
+    const key = url.slice(R2_PUBLIC_BASE.length + 1);
+    await s3.send(new DeleteObjectCommand({ Bucket: R2_BUCKET, Key: key }));
     return;
   }
   const filename = url.split("/uploads/")[1];
