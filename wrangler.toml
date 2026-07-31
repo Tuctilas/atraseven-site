@@ -1,15 +1,13 @@
-# Configuração do Cloudflare (Workers Static Assets), versionada no repo.
+# Configuração do Cloudflare Pages, versionada no repositório.
 #
-# O site é 100% estático, então é publicado como um Worker que serve apenas
-# os arquivos da pasta dist-site — sem código de Worker (sem "main"):
-#   • URL que casa com um arquivo em dist-site  -> serve o arquivo
-#   • URL que não casa                          -> 404
+# O site é estático; pages_build_output_dir fixa o diretório publicado em
+# dist-site, então não depende do campo manual no painel. O comando de
+# build (npm run build) monta essa pasta.
 #
-# O comando de build (npm run build) monta dist-site; o deploy é
-# `npx wrangler deploy`, que lê esta configuração.
+# (Usamos Pages em vez de Workers porque o Pages aceita o domínio
+# www.atraseven.com.br via CNAME mantendo o DNS na HostGator — assim o
+# e-mail da empresa não é afetado.)
 
 name = "atraseven-site"
+pages_build_output_dir = "./dist-site"
 compatibility_date = "2026-07-30"
-
-[assets]
-directory = "./dist-site"
