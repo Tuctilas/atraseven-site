@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ATRA SEVEN | Assistência Técnica em Redutores e Acoplamentos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600&family=Barlow+Condensed:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<canvas id="redutor-bg"></canvas>
+
+<nav>
+  <a class="nav-logo" href="#">
+    <div class="nav-gear-wrap">
+      <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <g class="gear-spin">
+          <path d="M20 12a8 8 0 100 16 8 8 0 000-16zm0 12a4 4 0 110-8 4 4 0 010 8z" fill="#5ccda7"/>
+          <path d="M18 4h4v4h-4zM18 32h4v4h-4zM4 18v4h4v-4zM32 18v4h4v-4z
+                   M7.05 9.88l2.83-2.83 2.83 2.83-2.83 2.83z
+                   M27.3 30.12l2.82-2.83 2.83 2.83-2.83 2.82z
+                   M7.05 30.12l2.83-2.83 2.83 2.83-2.83 2.82z
+                   M27.3 9.88l2.82 2.83-2.83 2.83-2.82-2.83z" fill="#5ccda7"/>
+        </g>
+      </svg>
+    </div>
+    <div class="nav-logo-text">ATRA <span>SEVEN</span></div>
+  </a>
+  <ul class="nav-links" id="nav-links">
+    <li><a href="#sobre">Sobre</a></li>
+    <li><a href="#servicos">Serviços</a></li>
+    <li><a href="#setores">Setores</a></li>
+    <li><a href="#contato">Contato</a></li>
+    <li class="nav-links-cta"><a href="#contato">Fale Conosco</a></li>
+  </ul>
+  <a class="nav-cta" href="#contato">Fale Conosco</a>
+  <button class="nav-toggle" id="nav-toggle" aria-label="Abrir menu" aria-expanded="false" aria-controls="nav-links">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<section class="hero" id="home">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-orb gold"></div>
+  <div class="hero-orb red"></div>
+
+  <div class="hero-content">
+    <div class="hero-eyebrow">Fundada em 2014, especialistas em redutores e acoplamentos</div>
+
+    <div class="hero-title-block">
+      <div class="hero-title">ATRA</div>
+      <svg class="hero-gear-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <g class="g-main">
+          <circle cx="50" cy="50" r="18" stroke="#5ccda7" stroke-width="2.5" fill="none"/>
+          <circle cx="50" cy="50" r="8" stroke="#5ccda7" stroke-width="2" fill="rgba(92,205,167,0.1)"/>
+          <rect x="46" y="22" width="8" height="10" rx="1.5" fill="#5ccda7"/>
+          <rect x="46" y="68" width="8" height="10" rx="1.5" fill="#5ccda7"/>
+          <rect x="22" y="46" width="10" height="8" rx="1.5" fill="#5ccda7"/>
+          <rect x="68" y="46" width="10" height="8" rx="1.5" fill="#5ccda7"/>
+          <rect x="29.7" y="29.7" width="8" height="10" rx="1.5" fill="#5ccda7" transform="rotate(45 33.7 34.7)"/>
+          <rect x="62" y="29.7" width="8" height="10" rx="1.5" fill="#5ccda7" transform="rotate(-45 66 34.7)"/>
+          <rect x="29.7" y="60.3" width="8" height="10" rx="1.5" fill="#5ccda7" transform="rotate(-45 33.7 65.3)"/>
+          <rect x="62" y="60.3" width="8" height="10" rx="1.5" fill="#5ccda7" transform="rotate(45 66 65.3)"/>
+        </g>
+        <g class="g-small" style="transform-origin:72px 28px">
+          <circle cx="72" cy="28" r="9" stroke="#5ccda7" stroke-width="1.5" fill="none" opacity="0.6"/>
+          <circle cx="72" cy="28" r="4" stroke="#5ccda7" stroke-width="1.2" fill="rgba(92,205,167,0.08)" opacity="0.6"/>
+          <rect x="69.5" y="16" width="5" height="6" rx="1" fill="#5ccda7" opacity="0.6"/>
+          <rect x="69.5" y="34" width="5" height="6" rx="1" fill="#5ccda7" opacity="0.6"/>
+          <rect x="60" y="25.5" width="6" height="5" rx="1" fill="#5ccda7" opacity="0.6"/>
+          <rect x="78" y="25.5" width="6" height="5" rx="1" fill="#5ccda7" opacity="0.6"/>
+        </g>
+      </svg>
+      <div class="hero-title"><span class="accent">SEVEN</span></div>
+    </div>
+
+    <p class="hero-sub">
+      Mão de obra especializada e altamente qualificada para redutores e acoplamentos industriais.
+      Atendimento <em>in loco</em> ou em oficina externa.
+    </p>
+
+    <div class="hero-actions">
+      <a class="btn-primary" href="#contato">Solicitar Orçamento</a>
+      <a class="btn-ghost" href="#servicos">Ver Serviços</a>
+    </div>
+
+    <div class="avail-badge">
+      <span class="avail-dot"></span>
+      Emergências e paradas programadas
+    </div>
+  </div>
+</section>
+
+<div class="ticker">
+  <div class="ticker-inner">
+    <span>Redutores</span><span>·</span><span>Acoplamentos</span><span>·</span>
+    <span>Mineração</span><span>·</span><span>Siderurgia</span><span>·</span>
+    <span>Açúcar e Álcool</span><span>·</span><span>Metalurgia</span><span>·</span>
+    <span>Alimentícia</span><span>·</span><span>Petróleo e Gás</span><span>·</span>
+    <span>Serviço In Loco</span><span>·</span><span>Oficina Externa</span><span>·</span>
+    <span>Redutores</span><span>·</span><span>Acoplamentos</span><span>·</span>
+    <span>Mineração</span><span>·</span><span>Siderurgia</span><span>·</span>
+    <span>Açúcar e Álcool</span><span>·</span><span>Metalurgia</span><span>·</span>
+    <span>Alimentícia</span><span>·</span><span>Petróleo e Gás</span><span>·</span>
+    <span>Serviço In Loco</span><span>·</span><span>Oficina Externa</span><span>·</span>
+  </div>
+</div>
+
+<section class="about" id="sobre">
+  <div class="reveal">
+    <div class="section-label">Sobre a empresa</div>
+    <h2 class="section-title">QUEM<br>SOMOS</h2>
+    <div class="about-text">
+      <p>Fundada em 2014, a ATRA SEVEN Assistência Técnica em Redutores e Acoplamentos fornece mão de obra especializada e altamente qualificada, tanto em serviços <em>in loco</em> como em oficina externa.</p>
+      <p>Nossa missão é satisfazer as necessidades específicas de cada cliente, buscando otimizar o equipamento para que esteja em perfeitas condições técnicas de funcionamento.</p>
+      <p>Estamos prontos para atender emergências e paradas programadas, com agilidade para reduzir o tempo de parada da produção.</p>
+    </div>
+  </div>
+  <div class="about-stats reveal">
+    <div class="stat-box"><div class="stat-num">+10</div><div class="stat-label">Anos de Mercado</div></div>
+    <div class="stat-box"><div class="stat-num">6</div><div class="stat-label">Serviços Especializados</div></div>
+    <div class="stat-box"><div class="stat-num">In<br>Loco</div><div class="stat-label">Serviço no Campo</div></div>
+    <div class="stat-box"><div class="stat-num">+8</div><div class="stat-label">Setores Atendidos</div></div>
+  </div>
+</section>
+
+<section class="gallery" id="empresa">
+  <div class="reveal">
+    <div class="section-label">Conheça de perto</div>
+    <h2 class="section-title">A <span class="accent">EMPRESA</span></h2>
+  </div>
+  <div class="carousel reveal" id="pres-carousel">
+    <button class="carousel-arrow prev" id="pres-prev" aria-label="Foto anterior">‹</button>
+    <div class="carousel-viewport">
+      <div class="carousel-track" id="pres-track"><!-- slides via content.js --></div>
+    </div>
+    <button class="carousel-arrow next" id="pres-next" aria-label="Próxima foto">›</button>
+    <div class="carousel-dots" id="pres-dots"></div>
+  </div>
+</section>
+
+<section class="services" id="servicos">
+  <div class="services-header reveal">
+    <div>
+      <div class="section-label">O que fazemos</div>
+      <h2 class="section-title">SERVIÇOS</h2>
+    </div>
+  </div>
+  <div class="services-grid">
+    <div class="service-card reveal" data-svc="1">
+      <div class="service-num">01</div>
+      <div class="service-icon">⚙️</div>
+      <div class="service-title">Manutenção de Redutores</div>
+      <p class="service-desc">Desmontagem, diagnóstico, limpeza e remontagem de redutores de velocidade industriais com precisão técnica.</p>
+    </div>
+    <div class="service-card reveal" data-svc="2">
+      <div class="service-num">02</div>
+      <div class="service-icon">🔗</div>
+      <div class="service-title">Reparo de Acoplamentos</div>
+      <p class="service-desc">Identificação de falhas e substituição de elementos em acoplamentos flexíveis, rígidos e de grade.</p>
+    </div>
+    <div class="service-card reveal" data-svc="3">
+      <div class="service-num">03</div>
+      <div class="service-icon">🏭</div>
+      <div class="service-title">Serviço In Loco</div>
+      <p class="service-desc">Atendimento diretamente na planta industrial do cliente, minimizando o tempo de parada da produção.</p>
+    </div>
+    <div class="service-card reveal" data-svc="4">
+      <div class="service-num">04</div>
+      <div class="service-icon">🔧</div>
+      <div class="service-title">Oficina Especializada</div>
+      <p class="service-desc">Reparos completos em oficina externa com estrutura e ferramental adequado para grandes equipamentos.</p>
+    </div>
+    <div class="service-card reveal" data-svc="5">
+      <div class="service-num">05</div>
+      <div class="service-icon">🔍</div>
+      <div class="service-title">Diagnóstico Técnico</div>
+      <p class="service-desc">Análise de vibração, análise de óleo e inspeção preditiva para antecipar falhas antes da parada.</p>
+    </div>
+    <div class="service-card reveal" data-svc="6">
+      <div class="service-num">06</div>
+      <div class="service-icon">⚡</div>
+      <div class="service-title">Atendimento Emergencial</div>
+      <p class="service-desc">Equipe mobilizada para emergências e paradas não programadas, reduzindo o tempo de máquina parada.</p>
+    </div>
+  </div>
+</section>
+
+<section class="industries" id="setores">
+  <div class="reveal">
+    <div class="section-label">Onde atuamos</div>
+    <h2 class="section-title">SETORES<br>INDUSTRIAIS</h2>
+  </div>
+  <div class="industries-list">
+    <a class="industry-item reveal" href="#contato"><span class="industry-name">Mineração</span><span class="industry-arrow">→</span></a>
+    <a class="industry-item reveal" href="#contato"><span class="industry-name">Siderurgia</span><span class="industry-arrow">→</span></a>
+    <a class="industry-item reveal" href="#contato"><span class="industry-name">Açúcar e Álcool</span><span class="industry-arrow">→</span></a>
+    <a class="industry-item reveal" href="#contato"><span class="industry-name">Metalurgia</span><span class="industry-arrow">→</span></a>
+    <a class="industry-item reveal" href="#contato"><span class="industry-name">Indústria Alimentícia</span><span class="industry-arrow">→</span></a>
+    <a class="industry-item reveal" href="#contato"><span class="industry-name">Mecânica Industrial</span><span class="industry-arrow">→</span></a>
+    <a class="industry-item reveal" href="#contato"><span class="industry-name">Energia</span><span class="industry-arrow">→</span></a>
+    <a class="industry-item reveal" href="#contato"><span class="industry-name">Petróleo e Gás</span><span class="industry-arrow">→</span></a>
+  </div>
+</section>
+
+<section class="mission reveal">
+  <div class="section-label" style="justify-content:center;">Nossa Missão</div>
+  <p class="mission-quote">Otimizar cada equipamento para que opere em suas <span class="accent">condições técnicas ideais.</span></p>
+  <p class="mission-sub">Buscamos satisfazer as necessidades específicas de cada cliente com excelência técnica e agilidade, porque parada de produção custa caro.</p>
+</section>
+
+<section class="differentials">
+  <div class="reveal">
+    <div class="section-label">Por que a Atra Seven</div>
+    <h2 class="section-title">NOSSOS<br>DIFERENCIAIS</h2>
+  </div>
+  <div class="diff-grid">
+    <div class="diff-item reveal">
+      <div class="diff-icon">⚡</div>
+      <div class="diff-title">Agilidade no Atendimento</div>
+      <p class="diff-text">Resposta rápida para emergências e paradas programadas. Sua produção não pode esperar.</p>
+    </div>
+    <div class="diff-item reveal">
+      <div class="diff-icon">🛠️</div>
+      <div class="diff-title">Mão de Obra Qualificada</div>
+      <p class="diff-text">Equipe com experiência técnica comprovada em redutores e acoplamentos de alta complexidade.</p>
+    </div>
+    <div class="diff-item reveal">
+      <div class="diff-icon">📍</div>
+      <div class="diff-title">Atendimento In Loco</div>
+      <p class="diff-text">Deslocamos a equipe até a sua planta, reduzindo o tempo de parada da sua linha de produção.</p>
+    </div>
+    <div class="diff-item reveal">
+      <div class="diff-icon">🏆</div>
+      <div class="diff-title">Experiência Multissetorial</div>
+      <p class="diff-text">Atuamos em mineração, siderurgia, alimentos, petróleo e mais. Conhecemos os desafios do seu setor.</p>
+    </div>
+  </div>
+</section>
+
+<section class="contact" id="contato">
+  <div class="contact-info reveal">
+    <div class="section-label">Entre em contato</div>
+    <h2>VAMOS<br>TRABALHAR<br>JUNTOS</h2>
+    <div class="contact-detail">
+      <div class="contact-row">
+        <span class="contact-row-label">WhatsApp</span>
+        <span class="contact-row-val"><a id="c-whatsapp" href="https://wa.me/553130330708?text=Ol%C3%A1!%20Vim%20pelo%20site%20da%20ATRA%20SEVEN%20e%20gostaria%20de%20solicitar%20um%20or%C3%A7amento." target="_blank" rel="noopener">+55 (31) 3033-0708</a></span>
+      </div>
+      <div class="contact-row">
+        <span class="contact-row-label">E-mail</span>
+        <span class="contact-row-val"><a id="c-email" href="mailto:vendas@atraseven.com.br">vendas@atraseven.com.br</a></span>
+      </div>
+      <div class="contact-row">
+        <span class="contact-row-label">Serviços</span>
+        <span class="contact-row-val">In loco e oficina externa</span>
+      </div>
+      <div class="contact-row">
+        <span class="contact-row-label">LinkedIn</span>
+        <span class="contact-row-val"><a id="c-linkedin" href="https://linkedin.com/company/atra-seven" target="_blank" rel="noopener">linkedin.com/company/atra-seven</a></span>
+      </div>
+    </div>
+    <div class="avail-badge">
+      <span class="avail-dot"></span>
+      Respondemos no mesmo dia
+    </div>
+  </div>
+
+  <div class="contact-form reveal">
+    <div class="form-row">
+      <div class="form-group">
+        <label>Nome Completo</label>
+        <input type="text" id="f-nome" placeholder="Seu nome">
+      </div>
+      <div class="form-group">
+        <label>Empresa</label>
+        <input type="text" id="f-empresa" placeholder="Sua empresa">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Telefone</label>
+        <input type="tel" id="f-telefone" placeholder="(00) 00000-0000">
+      </div>
+      <div class="form-group">
+        <label>E-mail</label>
+        <input type="email" id="f-email" placeholder="seu@email.com">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Setor Industrial</label>
+      <select id="f-setor">
+        <option value="">Selecione o setor</option>
+        <option>Mineração</option><option>Siderurgia</option>
+        <option>Açúcar e Álcool</option><option>Metalurgia</option>
+        <option>Indústria Alimentícia</option><option>Energia</option>
+        <option>Petróleo e Gás</option><option>Outro</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Como podemos ajudar?</label>
+      <textarea id="f-msg" placeholder="Descreva o equipamento, o problema ou o serviço necessário..."></textarea>
+    </div>
+
+    <!-- Honeypot anti-bot: invisível para humanos; se preenchido, descartamos o envio -->
+    <div class="hp-field" aria-hidden="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;">
+      <label>Não preencha este campo</label>
+      <input type="text" id="f-website" name="website" tabindex="-1" autocomplete="off">
+    </div>
+
+    <label class="form-consent" style="display:flex;gap:0.5rem;align-items:flex-start;font-size:0.78rem;color:var(--muted);line-height:1.4;margin:0.6rem 0;">
+      <input type="checkbox" id="f-consent" style="margin-top:0.2rem;flex-shrink:0;">
+      <span>Concordo que a ATRA SEVEN trate os dados informados com a finalidade exclusiva de responder a esta solicitação de orçamento, conforme a <a href="privacidade.html" target="_blank" rel="noopener">Política de Privacidade</a>.</span>
+    </label>
+
+    <button class="btn-primary" onclick="submitForm()" style="width:100%;font-size:0.85rem;margin-top:0.5rem;">
+      Enviar Solicitação
+    </button>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-logo">ATRA <span>SEVEN</span></div>
+  <ul class="footer-links">
+    <li><a href="#sobre">Sobre</a></li>
+    <li><a href="#servicos">Serviços</a></li>
+    <li><a href="#setores">Setores</a></li>
+    <li><a href="#contato">Contato</a></li>
+    <li><a href="privacidade.html">Privacidade</a></li>
+  </ul>
+  <div class="footer-right">
+    <span class="footer-copy">© 2026 ATRA SEVEN · Todos os direitos reservados</span>
+    <a class="footer-dev" href="https://www.linkedin.com/in/gustavo-maced/" target="_blank" rel="noopener">Desenvolvido por Gustavo Macedo</a>
+  </div>
+</footer>
+
+<a id="wa-float" class="whatsapp-float" href="https://wa.me/553130330708?text=Ol%C3%A1!%20Vim%20pelo%20site%20da%20ATRA%20SEVEN%20e%20gostaria%20de%20solicitar%20um%20or%C3%A7amento." target="_blank" rel="noopener" aria-label="Fale conosco pelo WhatsApp">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+  </svg>
+</a>
+
+<script src="js/config.js"></script>
+<script src="js/redutor-bg.js"></script>
+<script src="js/main.js"></script>
+<script src="js/content.js"></script>
+</body>
+</html>

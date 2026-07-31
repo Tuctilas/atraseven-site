@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Área ADM · ATRA SEVEN</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  :root{
+    --bg:#ffffff; --surface:#f5f6f5; --surface2:#eceeec; --border:rgba(0,0,0,0.12);
+    --accent:#168a63; --accent2:#2e9e7a; --text:#161a1c; --muted:#5f6b66;
+    --font-display:'Bebas Neue',sans-serif; --font-cond:'Barlow Condensed',sans-serif; --font-body:'Barlow',sans-serif;
+  }
+  body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-weight:300;min-height:100vh;}
+  a{color:var(--accent);}
+  .wrap{max-width:880px;margin:0 auto;padding:2rem 1.5rem 6rem;}
+
+  .brand{font-family:var(--font-display);font-size:1.6rem;letter-spacing:0.14em;}
+  .brand span{color:var(--accent);}
+  .eyebrow{font-family:var(--font-cond);text-transform:uppercase;letter-spacing:0.26em;font-size:0.72rem;color:var(--accent);font-weight:600;}
+
+  /* login */
+  .login{max-width:380px;margin:8vh auto 0;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:2.2rem;}
+  .login .brand{margin-bottom:0.4rem;}
+  .login h1{font-family:var(--font-display);font-size:2rem;letter-spacing:0.04em;margin:0.2rem 0 1.4rem;}
+  label{display:block;font-family:var(--font-cond);text-transform:uppercase;letter-spacing:0.1em;font-size:0.72rem;color:var(--muted);margin:0 0 0.4rem;}
+  input[type=text],input[type=email],input[type=password],input[type=tel]{
+    width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);
+    font-family:var(--font-body);font-size:0.95rem;padding:0.7rem 0.85rem;margin-bottom:1rem;transition:border-color 0.2s;}
+  input:focus{outline:none;border-color:var(--accent);}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:0.5rem;width:100%;cursor:pointer;
+    background:var(--accent);color:#fff;border:none;border-radius:8px;font-family:var(--font-cond);font-weight:700;
+    text-transform:uppercase;letter-spacing:0.08em;font-size:0.85rem;padding:0.8rem 1rem;transition:opacity 0.2s, transform 0.1s;}
+  .btn:hover{opacity:0.92;} .btn:active{transform:translateY(1px);} .btn:disabled{opacity:0.5;cursor:default;}
+  .btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text);}
+  .btn-sm{width:auto;padding:0.5rem 0.85rem;font-size:0.75rem;}
+  .msg{font-size:0.85rem;margin-top:0.4rem;min-height:1.2em;}
+  .msg.err{color:#ff6b6b;} .msg.ok{color:var(--accent);}
+  .hint{font-size:0.8rem;color:var(--muted);line-height:1.5;margin-top:0.6rem;}
+  .hidden{display:none !important;}
+
+  /* dashboard */
+  .top{display:flex;align-items:center;justify-content:space-between;gap:1rem;border-bottom:1px solid var(--border);padding-bottom:1.2rem;margin-bottom:2rem;}
+  .top-actions{display:flex;gap:0.6rem;}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem;margin-bottom:1.5rem;}
+  .card h2{font-family:var(--font-display);font-size:1.5rem;letter-spacing:0.04em;margin-bottom:0.2rem;}
+  .card .sub{font-size:0.85rem;color:var(--muted);margin-bottom:1.2rem;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 1rem;}
+
+  .photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:1rem;}
+  .photo{background:var(--surface2);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+  .photo .thumb{width:100%;aspect-ratio:4/3;object-fit:cover;display:block;background:#e6e8e6;}
+  .photo .thumb-wrap{position:relative;line-height:0;}
+  .photo .grid{position:absolute;inset:0;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);}
+  .photo .grid button{border:1px solid rgba(255,255,255,0.4);background:transparent;cursor:pointer;padding:0;transition:background 0.15s;}
+  .photo .grid button:hover{background:rgba(22,138,99,0.28);}
+  .photo .grid button.active{background:rgba(22,138,99,0.42);box-shadow:inset 0 0 0 2px var(--accent);}
+  .photo .pc{padding:0.55rem;}
+  .photo .pc input{font-size:0.8rem;padding:0.45rem 0.5rem;margin-bottom:0.5rem;}
+  .photo .prow{display:flex;gap:0.35rem;}
+  .icon-btn{flex:1;cursor:pointer;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--muted);
+    font-size:0.85rem;padding:0.35rem;transition:color 0.2s,border-color 0.2s;}
+  .icon-btn:hover{color:var(--text);border-color:var(--accent);}
+  .icon-btn.del:hover{color:#ff6b6b;border-color:#ff6b6b;}
+  .add-row{display:flex;align-items:center;gap:1rem;margin-top:1.2rem;flex-wrap:wrap;}
+  .count{font-size:0.8rem;color:var(--muted);}
+  .svc-block{margin-bottom:1.6rem;padding-bottom:1.4rem;border-bottom:1px solid var(--border);}
+  .svc-block:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}
+  .svc-block-head{font-family:var(--font-cond);text-transform:uppercase;letter-spacing:0.08em;font-size:0.85rem;font-weight:600;margin-bottom:0.7rem;}
+  .svc-block-head .count{margin-left:0.4rem;}
+
+  /* barra fixa de salvar */
+  .savebar{position:fixed;left:0;right:0;bottom:0;z-index:20;background:rgba(8,8,8,0.92);backdrop-filter:blur(8px);
+    border-top:1px solid var(--border);padding:0.9rem 1.5rem;display:flex;align-items:center;justify-content:center;gap:1rem;}
+  .savebar .inner{width:100%;max-width:880px;display:flex;align-items:center;justify-content:space-between;gap:1rem;}
+  .savebar .btn{width:auto;}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login" class="login">
+  <div class="brand">ATRA <span>SEVEN</span></div>
+  <div class="eyebrow">Área administrativa</div>
+  <h1 id="login-title">ENTRAR</h1>
+
+  <div id="step-cred">
+    <label for="i-email">E-mail</label>
+    <input type="email" id="i-email" placeholder="seu@email.com" autocomplete="username">
+    <label for="i-pass">Senha</label>
+    <input type="password" id="i-pass" placeholder="••••••••" autocomplete="current-password">
+    <button class="btn" id="btn-login">Entrar</button>
+    <div class="msg" id="login-msg"></div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dash" class="wrap hidden">
+  <div class="top">
+    <div>
+      <div class="brand">ATRA <span>SEVEN</span></div>
+      <div class="eyebrow">Painel de conteúdo</div>
+    </div>
+    <div class="top-actions">
+      <a class="btn btn-ghost btn-sm" href="index.html" target="_blank" rel="noopener">Ver site</a>
+      <button class="btn btn-ghost btn-sm" id="btn-logout">Sair</button>
+    </div>
+  </div>
+
+  <!-- Contato -->
+  <div class="card">
+    <h2>Contato</h2>
+    <div class="sub">Aparece na seção de contato, no botão flutuante e nos links do site.</div>
+    <div class="grid2">
+      <div>
+        <label for="d-wa-label">WhatsApp (como aparece)</label>
+        <input type="text" id="d-wa-label" placeholder="+55 (31) 3033-0708">
+      </div>
+      <div>
+        <label for="d-wa-num">WhatsApp (só números, com DDI)</label>
+        <input type="tel" id="d-wa-num" placeholder="553130330708">
+      </div>
+    </div>
+    <label for="d-email">E-mail</label>
+    <input type="email" id="d-email" placeholder="vendas@atraseven.com.br">
+    <label for="d-linkedin">LinkedIn</label>
+    <input type="text" id="d-linkedin" placeholder="linkedin.com/company/atra-seven">
+  </div>
+
+  <!-- Apresentação -->
+  <div class="card">
+    <h2>Fotos de apresentação</h2>
+    <div class="sub">Carrossel "A Empresa" — até 10 fotos. Arraste a ordem com os botões ◀ ▶.</div>
+    <div class="photos" id="pres-list"></div>
+    <div class="add-row">
+      <button class="btn btn-sm" id="add-pres">+ Adicionar foto</button>
+      <span class="count" id="pres-count"></span>
+    </div>
+  </div>
+
+  <!-- Serviços -->
+  <div class="card">
+    <h2>Fotos por serviço</h2>
+    <div class="sub">Cada serviço aceita até 2 fotos. Elas aparecem ao clicar no card do serviço no site.</div>
+    <div id="svc-services"></div>
+  </div>
+</div>
+
+<div id="savebar" class="savebar hidden">
+  <div class="inner">
+    <span class="msg" id="save-msg"></span>
+    <button class="btn" id="btn-save">Salvar alterações</button>
+  </div>
+</div>
+
+<input type="file" id="file-input" accept="image/*" multiple class="hidden">
+
+<script src="js/config.js"></script>
+<script src="js/adm.js"></script>
+</body>
+</html>

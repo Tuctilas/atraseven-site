@@ -10,7 +10,9 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
-const OUT = path.join(ROOT, "dist-site");
+// Pasta publicada — é COMITADA no repositório (não é build artifact).
+// O Cloudflare Pages serve esta pasta direto, sem rodar build.
+const OUT = path.join(ROOT, "public");
 
 const FILES = [
   "index.html",
@@ -52,4 +54,4 @@ for (const dir of OPTIONAL_DIRS) {
   }
 }
 
-console.log(`\n✔ dist-site pronto (${FILES.length} arquivos)`);
+console.log(`\n✔ public/ pronto (${FILES.length} arquivos) — commite esta pasta`);
