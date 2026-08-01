@@ -79,7 +79,96 @@ function validateFields(body, limits) {
   return null;
 }
 
+const DESTINO_CONTATO = process.env.CONTACT_EMAIL || "vendas@atraseven.com.br";
+
+/**
+ * Envia a solicitação do formulário por HTTP (Resend) ou, na falta dele,
+ * por SMTP.
+ *
+ * A ordem não é preferência estética: a saída SMTP é BLOQUEADA na rede do
+ * Render — a conexão com mail.atraseven.com.br fica pendurada até o proxy
+ * devolver 502. Por isso produção usa Resend, e o SMTP fica só como
+ * caminho de desenvolvimento local.
+ *
+ * Lança em caso de falha: quem chama devolve 500 e o visitante vê o erro,
+ * em vez de receber "enviado com sucesso" com a mensagem no lixo.
+ */
+async function enviarSolicitacao(s) {
+  const assunto = `Nova solicitação de orçamento — ${s.nome}`;
+  const corpo =
+    `Nome: ${s.nome}\nEmpresa: ${s.empresa}\nTelefone: ${s.telefone}\n` +
+    `E-mail: ${s.email}\nSetor: ${s.setor}\n\nMensagem:\n${s.mensagem}`;
+
+  if (process.env.RESEND_API_KEY) {
+    // O remetente precisa ser do domínio verificado no Resend (um
+    // subdomínio de envio), não o e-mail do visitante — senão SPF/DKIM
+    // falham e a mensagem cai no spam. O visitante entra no reply_to,
+    // então responder no cliente de e-mail já vai para ele.
+    const remetente = process.env.RESEND_FROM || "Site ATRA SEVEN <site@envio.atraseven.com.br>";
+    const respostaPara = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s.email) ? s.email : undefined;
+
+    // RESEND_API_BASE existe para os testes apontarem a um servidor local
+    // e conferirem o payload sem enviar e-mail de verdade. Em produção
+    // fica indefinido e vale o endereço oficial.
+    const base = process.env.RESEND_API_BASE || "https://api.resend.com";
+    const r = await fetch(base + "/emails", {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer " + process.env.RESEND_API_KEY,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: remetente,
+        to: [DESTINO_CONTATO],
+        subject: assunto,
+        text: corpo,
+        ...(respostaPara ? { reply_to: respostaPara } : {}),
+      }),
+      signal: AbortSignal.timeout(15000),
+    });
+
+    if (!r.ok) {
+      const detalhe = await r.text().catch(() => "");
+      throw new Error(`Resend respondeu ${r.status}: ${detalhe.slice(0, 300)}`);
+    }
+    return;
+  }
+
+  if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+    const porta = parseInt(process.env.SMTP_PORT || "587");
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: porta,
+      secure: porta === 465,
+      // Aborta se o servidor não oferecer STARTTLS, em vez de seguir em
+      // claro — senão a senha SMTP viaja legível na rede.
+      requireTLS: true,
+      // Sem estes limites o sendMail fica pendurado indefinidamente quando
+      // a saída SMTP está bloqueada, e o visitante espera na tela até o
+      // navegador desistir. Melhor falhar rápido e alto.
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 20000,
+      auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+    });
+
+    await transporter.sendMail({
+      from: `"Site ATRA SEVEN" <${process.env.SMTP_USER}>`,
+      to: DESTINO_CONTATO,
+      subject: assunto,
+      text: corpo,
+      ...(s.email !== "Não informado" ? { replyTo: s.email } : {}),
+    });
+    return;
+  }
+
+  throw new Error("Nenhum meio de envio configurado (defina RESEND_API_KEY).");
+}
+
 app.post("/api/contact", contactLimiter, async (req, res) => {
+  // Declarado FORA do try porque o catch precisa dele: é lá que a
+  // solicitação vai para o log quando o envio falha.
+  let s = null;
   try {
     const { nome, empresa, telefone, email, setor, mensagem, website, consent } = req.body;
 
@@ -103,7 +192,7 @@ app.post("/api/contact", contactLimiter, async (req, res) => {
     const validationError = validateFields(req.body, CONTACT_LIMITS);
     if (validationError) return res.status(400).json({ error: validationError });
 
-    const s = {
+    s = {
       nome:      sanitize(nome),
       empresa:   empresa   ? sanitize(empresa)   : "Não informado",
       telefone:  telefone  ? sanitize(telefone)  : "Não informado",
@@ -112,34 +201,15 @@ app.post("/api/contact", contactLimiter, async (req, res) => {
       mensagem:  sanitize(mensagem),
     };
 
-    if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
-      const porta = parseInt(process.env.SMTP_PORT || "587");
-      const transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: porta,
-        secure: porta === 465,
-        // Aborta se o servidor não oferecer STARTTLS, em vez de seguir em
-        // claro — senão a senha SMTP viaja legível na rede.
-        requireTLS: true,
-        auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
-      });
-
-      await transporter.sendMail({
-        from: `"Site ATRA SEVEN" <${process.env.SMTP_USER}>`,
-        to: process.env.CONTACT_EMAIL || "vendas@atraseven.com.br",
-        subject: `Nova solicitação de orçamento — ${s.nome}`,
-        text: `Nome: ${s.nome}\nEmpresa: ${s.empresa}\nTelefone: ${s.telefone}\nE-mail: ${s.email}\nSetor: ${s.setor}\n\nMensagem:\n${s.mensagem}`,
-      });
-    } else {
-      // Sem SMTP o pedido é DESCARTADO, mas o visitante vê "enviado com
-      // sucesso". Grita no log para que a perda de contato não passe batida.
-      console.error("[contato] SMTP incompleto (SMTP_HOST/SMTP_USER/SMTP_PASS) — " +
-        `solicitação de "${s.nome}" NÃO foi enviada por e-mail.`);
-    }
+    await enviarSolicitacao(s);
 
     res.json({ ok: true });
   } catch (error) {
-    console.error("Erro no formulário de contato:", error.message);
+    // Registra a solicitação inteira: se o envio falhar, este log é a
+    // única cópia do contato do cliente. Sem isso o pedido some.
+    console.error("[contato] FALHA NO ENVIO:", error.message);
+    console.error("[contato] solicitação perdida —",
+      JSON.stringify({ nome: s?.nome, empresa: s?.empresa, telefone: s?.telefone, email: s?.email }));
     res.status(500).json({ error: "Erro ao enviar solicitação." });
   }
 });
