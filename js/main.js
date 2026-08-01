@@ -87,17 +87,9 @@ async function submitForm() {
   }
 }
 
-/* ── serviços: clicar no card abre/fecha o painel de fotos (acordeão) ── */
-(function () {
-  const cards = document.querySelectorAll('.service-card[data-svc]');
-  cards.forEach(card => {
-    card.addEventListener('click', () => {
-      const wasOpen = card.classList.contains('open');
-      cards.forEach(c => c.classList.remove('open'));
-      if (!wasOpen) card.classList.add('open');
-    });
-  });
-})();
+/* O acordeão dos cards de serviço foi removido: as fotos agora ficam
+   sempre abertas (ver buildServicePanels em content.js), então não há
+   mais nada para abrir nem fechar ao clicar. */
 
 /* ── porta dos fundos: 3 cliques no logo "ATRA SEVEN" abrem a área ADM ── */
 (function () {

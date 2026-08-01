@@ -10,15 +10,35 @@
   const ctx = canvas.getContext("2d");
 
   const ACCENT = "#2e9e7a";          // verde, visível sobre branco
-  const BASE = 0.62;                  // opacidade global do fundo
+  const BASE = 0.40;                  // opacidade global do fundo
   const reduce = window.matchMedia("(prefers-reduced-motion:reduce)").matches;
+
+  /* Cache de gradientes.
+     createLinearGradient/createRadialGradient alocam objeto novo a cada
+     chamada, e o desenho fazia ~10 por quadro (uma por engrenagem, eixo,
+     tampa, motor e carcaça) — 600 alocações por segundo, só para jogar
+     fora no quadro seguinte. Como todos dependem apenas da geometria, que
+     só muda no resize, ficam guardados aqui. */
+  let grads = new Map();
+  function grad(chave, criar) {
+    let g = grads.get(chave);
+    if (!g) { g = criar(); grads.set(chave, g); }
+    return g;
+  }
 
   let w = 0, h = 0, dpr = 1;
   function resize() {
-    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    /* Teto de 1.5 em vez de 2: em tela 1920x1080 com dpr 2 o canvas teria
+       8,3 megapixels para limpar e repintar a cada quadro. Como o fundo é
+       decorativo e de baixa opacidade, 1.5 é indistinguível a olho e corta
+       ~45% dos pixels. */
+    dpr = Math.min(window.devicePixelRatio || 1, 1.5);
     w = window.innerWidth; h = window.innerHeight;
     canvas.width = w * dpr; canvas.height = h * dpr;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    grads.clear();       // a geometria mudou; os gradientes velhos não servem
+    medirContato();
+    precisaDesenhar = true;
   }
   window.addEventListener("resize", resize);
 
@@ -26,12 +46,26 @@
      Assim o redutor já está montado/girando em "Vamos Trabalhar Juntos" e
      NÃO "desmonta" quando o painel de IA (mais abaixo) expande. */
   let target = 0, disp = 0, spinAccum = 0, lastT = performance.now();
-  function readProgress() {
+  let precisaDesenhar = true;
+
+  /* A posição do #contato só muda quando o layout muda. Media uma vez por
+     quadro com getBoundingClientRect, o que força o navegador a recalcular
+     o layout 60 vezes por segundo no meio da rolagem — o clássico layout
+     thrashing, que é justamente o que faz a rolagem "travar" em degraus.
+     Agora fica em cache e só é remedida no resize e quando a altura do
+     documento muda (imagens carregando, conteúdo da API chegando). */
+  let contatoTop = 0, alturaConhecida = 0;
+  function medirContato() {
     const el = document.getElementById("contato");
-    let top;
-    if (el) { const r = el.getBoundingClientRect(); top = r.top + window.scrollY; }
-    else { top = document.documentElement.scrollHeight - window.innerHeight; }
-    const denom = Math.max(1, top - window.innerHeight * 0.5);
+    contatoTop = el
+      ? el.getBoundingClientRect().top + window.scrollY
+      : document.documentElement.scrollHeight - window.innerHeight;
+    alturaConhecida = document.documentElement.scrollHeight;
+  }
+
+  function readProgress() {
+    if (document.documentElement.scrollHeight !== alturaConhecida) medirContato();
+    const denom = Math.max(1, contatoTop - window.innerHeight * 0.5);
     target = Math.min(Math.max(window.scrollY / denom, 0), 1);
   }
 
@@ -44,10 +78,13 @@
   function gear(cx, cy, r, teeth, angle, alpha) {
     const toothH = r * 0.22, rootR = r - toothH * 0.6, rimR = r * 0.70, hubR = r * 0.30, holeR = r * 0.16;
     ctx.save(); ctx.globalAlpha = alpha; ctx.translate(cx, cy); ctx.rotate(angle);
-    const mg = ctx.createRadialGradient(-r * 0.25, -r * 0.25, r * 0.1, 0, 0, r * 1.1);
-    mg.addColorStop(0, "rgba(46,158,122,0.16)");
-    mg.addColorStop(0.6, "rgba(46,158,122,0.05)");
-    mg.addColorStop(1, "rgba(46,158,122,0.02)");
+    const mg = grad("gear" + r, () => {
+      const g = ctx.createRadialGradient(-r * 0.25, -r * 0.25, r * 0.1, 0, 0, r * 1.1);
+      g.addColorStop(0, "rgba(46,158,122,0.16)");
+      g.addColorStop(0.6, "rgba(46,158,122,0.05)");
+      g.addColorStop(1, "rgba(46,158,122,0.02)");
+      return g;
+    });
     ctx.fillStyle = mg; ctx.strokeStyle = ACCENT; ctx.lineWidth = 1.8; ctx.lineJoin = "round";
     ctx.beginPath();
     for (let i = 0; i < teeth; i++) {
@@ -95,10 +132,13 @@
 
   function shaft(xIn, xEnd, y, th, alpha, dir) {
     ctx.save(); ctx.globalAlpha = alpha;
-    const g = ctx.createLinearGradient(0, y - th, 0, y + th);
-    g.addColorStop(0, "rgba(46,158,122,0.10)");
-    g.addColorStop(0.5, "rgba(46,158,122,0.30)");
-    g.addColorStop(1, "rgba(46,158,122,0.10)");
+    const g = grad("shaft" + y + "|" + th, () => {
+      const gr = ctx.createLinearGradient(0, y - th, 0, y + th);
+      gr.addColorStop(0, "rgba(46,158,122,0.10)");
+      gr.addColorStop(0.5, "rgba(46,158,122,0.30)");
+      gr.addColorStop(1, "rgba(46,158,122,0.10)");
+      return gr;
+    });
     ctx.fillStyle = g; ctx.strokeStyle = ACCENT; ctx.lineWidth = 1.6;
     const x0 = Math.min(xIn, xEnd), x1 = Math.max(xIn, xEnd);
     ctx.beginPath(); rrectPath(x0, y - th / 2, x1 - x0, th, th * 0.25); ctx.fill(); ctx.stroke();
@@ -113,8 +153,11 @@
   function bearingCap(cx, cy, r, n, alpha, rot) {
     ctx.save(); ctx.globalAlpha = alpha;
     ctx.strokeStyle = ACCENT; ctx.lineWidth = 2;
-    const g = ctx.createRadialGradient(cx - r * 0.3, cy - r * 0.3, r * 0.1, cx, cy, r);
-    g.addColorStop(0, "rgba(46,158,122,0.12)"); g.addColorStop(1, "rgba(46,158,122,0.04)");
+    const g = grad("cap" + cx + "|" + cy + "|" + r, () => {
+      const gr = ctx.createRadialGradient(cx - r * 0.3, cy - r * 0.3, r * 0.1, cx, cy, r);
+      gr.addColorStop(0, "rgba(46,158,122,0.12)"); gr.addColorStop(1, "rgba(46,158,122,0.04)");
+      return gr;
+    });
     ctx.fillStyle = g;
     ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
     ctx.lineWidth = 1.4;
@@ -136,9 +179,12 @@
     ctx.lineJoin = "round"; ctx.lineCap = "round";
     ctx.strokeStyle = ACCENT; ctx.lineWidth = 2;
     const wd = len * 0.115, headR = len * 0.17;
-    const g = ctx.createLinearGradient(0, -headR, 0, headR);
-    g.addColorStop(0, "rgba(46,158,122,0.34)");
-    g.addColorStop(1, "rgba(46,158,122,0.10)");
+    const g = grad("wrench" + headR, () => {
+      const gr = ctx.createLinearGradient(0, -headR, 0, headR);
+      gr.addColorStop(0, "rgba(46,158,122,0.34)");
+      gr.addColorStop(1, "rgba(46,158,122,0.10)");
+      return gr;
+    });
     ctx.fillStyle = g;
     ctx.beginPath(); rrectPath(0, -wd / 2, len * 0.74, wd, wd * 0.5); ctx.fill(); ctx.stroke();
     ctx.beginPath(); ctx.arc(0, 0, headR, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
@@ -160,10 +206,13 @@
     ctx.save(); ctx.globalAlpha = alpha;
     const x = rightX - bw, y = cy - bh / 2;
     ctx.strokeStyle = ACCENT; ctx.lineWidth = 2.4;
-    const g = ctx.createLinearGradient(x, y, x, y + bh);
-    g.addColorStop(0, "rgba(46,158,122,0.16)");
-    g.addColorStop(0.5, "rgba(46,158,122,0.05)");
-    g.addColorStop(1, "rgba(46,158,122,0.12)");
+    const g = grad("motor" + x + "|" + y + "|" + bh, () => {
+      const gr = ctx.createLinearGradient(x, y, x, y + bh);
+      gr.addColorStop(0, "rgba(46,158,122,0.16)");
+      gr.addColorStop(0.5, "rgba(46,158,122,0.05)");
+      gr.addColorStop(1, "rgba(46,158,122,0.12)");
+      return gr;
+    });
     ctx.fillStyle = g;
     rrect(x, y, bw, bh, bh * 0.22); ctx.fill(); ctx.stroke();
     ctx.lineWidth = 1.2; ctx.globalAlpha = alpha * 0.55;
@@ -226,8 +275,11 @@
     (function () {
       const a = aMain;
       ctx.save(); ctx.globalAlpha = a;
-      const bg = ctx.createLinearGradient(hx, hy, hx, hy + hh);
-      bg.addColorStop(0, "rgba(46,158,122,0.10)"); bg.addColorStop(0.5, "rgba(46,158,122,0.03)"); bg.addColorStop(1, "rgba(46,158,122,0.08)");
+      const bg = grad("carcaca" + hx + "|" + hy + "|" + hh, () => {
+        const gr = ctx.createLinearGradient(hx, hy, hx, hy + hh);
+        gr.addColorStop(0, "rgba(46,158,122,0.10)"); gr.addColorStop(0.5, "rgba(46,158,122,0.03)"); gr.addColorStop(1, "rgba(46,158,122,0.08)");
+        return gr;
+      });
       ctx.fillStyle = bg; ctx.strokeStyle = ACCENT; ctx.lineWidth = 2.6;
       rrect(hx, hy, hw, hh, 20 * s); ctx.fill(); ctx.stroke();
       ctx.lineWidth = 1.6; ctx.globalAlpha = a * 0.7;
@@ -299,12 +351,32 @@
   }
 
   function frame() {
-    readProgress();
-    disp += (target - disp) * 0.12;            // suaviza o acompanhamento da rolagem
-    draw();
     requestAnimationFrame(frame);
+
+    // Aba em segundo plano: não há o que pintar, e o rAF ainda pode
+    // disparar durante a transição.
+    if (document.hidden) { lastT = performance.now(); return; }
+
+    readProgress();
+    const antes = disp;
+    disp += (target - disp) * 0.12;            // suaviza o acompanhamento da rolagem
+
+    /* Só repinta quando a imagem realmente muda. Duas fontes de mudança:
+       a rolagem (disp caminhando até target) e o giro contínuo, que só
+       existe depois que o redutor termina de montar (settle > 0).
+       Parado no topo da página as duas são nulas e o quadro seria
+       idêntico ao anterior — antes ele era repintado assim mesmo, 60
+       vezes por segundo, competindo com a rolagem pela CPU. */
+    const rolando = Math.abs(target - disp) > 0.0004 || Math.abs(disp - antes) > 0.0004;
+    const girando = !reduce && disp > 0.85;
+    if (!rolando && !girando && !precisaDesenhar) { lastT = performance.now(); return; }
+    precisaDesenhar = false;
+
+    draw();
   }
 
   resize();
+  // Recalcula quando o conteúdo da API chega e muda a altura da página
+  window.addEventListener("load", medirContato);
   requestAnimationFrame(frame);
 })();

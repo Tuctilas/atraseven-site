@@ -134,39 +134,34 @@
       card.querySelector(".svc-toggle")?.remove();
       card.querySelector(".svc-photos")?.remove();
 
-      const toggle = document.createElement("div");
-      toggle.className = "svc-toggle";
-      toggle.textContent = photos.length ? "Ver fotos" : "Fotos em breve";
+      // Sem foto o card não ganha nada: nem painel, nem rótulo. O
+      // "Fotos em breve" que ficava aqui dava a mesma impressão de site
+      // inacabado que os placeholders do carrossel da seção A EMPRESA.
+      if (!photos.length) return;
 
+      // As fotos ficam SEMPRE visíveis. Antes era um acordeão que exigia
+      // clicar no card, e o visitante não tinha motivo para descobrir que
+      // havia algo escondido ali.
       const panel = document.createElement("div");
       panel.className = "svc-photos";
 
-      if (photos.length) {
-        const inner = document.createElement("div");
-        inner.className = "svc-photos-inner";
-        photos.slice(0, 2).forEach((p) => {
-          const fig = document.createElement("figure");
-          fig.className = "svc-photo";
-          const img = document.createElement("img");
-          img.src = p.url; img.alt = p.caption || "Serviço ATRA SEVEN"; img.loading = "lazy";
-          if (p.position) img.style.objectPosition = p.position;
-          fig.appendChild(img);
-          if (p.caption) {
-            const cap = document.createElement("figcaption");
-            cap.textContent = p.caption;
-            fig.appendChild(cap);
-          }
-          inner.appendChild(fig);
-        });
-        panel.appendChild(inner);
-      } else {
-        const empty = document.createElement("div");
-        empty.className = "svc-empty";
-        empty.textContent = "Em breve adicionaremos fotos deste serviço.";
-        panel.appendChild(empty);
-      }
-
-      card.appendChild(toggle);
+      const inner = document.createElement("div");
+      inner.className = "svc-photos-inner";
+      photos.slice(0, 2).forEach((p) => {
+        const fig = document.createElement("figure");
+        fig.className = "svc-photo";
+        const img = document.createElement("img");
+        img.src = p.url; img.alt = p.caption || "Serviço ATRA SEVEN"; img.loading = "lazy";
+        if (p.position) img.style.objectPosition = p.position;
+        fig.appendChild(img);
+        if (p.caption) {
+          const cap = document.createElement("figcaption");
+          cap.textContent = p.caption;
+          fig.appendChild(cap);
+        }
+        inner.appendChild(fig);
+      });
+      panel.appendChild(inner);
       card.appendChild(panel);
     });
   }
