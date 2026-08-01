@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ATRA SEVEN · mapa do site
+
+  URLs no formato "limpo" (sem .html) porque é assim que o Cloudflare
+  Pages serve: /privacidade.html responde 308 e redireciona para
+  /privacidade. Listar a versão com .html mandaria o Google a um
+  redirecionamento desnecessário.
+
+  A área ADM não entra aqui — é privada e tem noindex.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://www.atraseven.com.br/</loc>
+    <lastmod>2026-08-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://www.atraseven.com.br/privacidade</loc>
+    <lastmod>2026-08-01</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+</urlset>

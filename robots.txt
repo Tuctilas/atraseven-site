@@ -1,0 +1,12 @@
+# ATRA SEVEN · https://www.atraseven.com.br
+#
+# A área ADM (/adm) NÃO é bloqueada aqui de propósito. Ela já tem
+# <meta name="robots" content="noindex, nofollow"> na própria página, que
+# é o sinal confiável para tirar do índice. Bloquear por robots.txt teria
+# o efeito oposto: o Google deixaria de rastrear a página e, com isso,
+# nunca leria o noindex — podendo manter a URL indexada sem conteúdo.
+
+User-agent: *
+Allow: /
+
+Sitemap: https://www.atraseven.com.br/sitemap.xml

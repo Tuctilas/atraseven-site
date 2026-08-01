@@ -20,6 +20,8 @@ const FILES = [
   "privacidade.html",
   "_redirects",
   "_headers",
+  "robots.txt",
+  "sitemap.xml",
   "css/style.css",
   "js/config.js",
   "js/redutor-bg.js",
