@@ -131,7 +131,6 @@
       const id = card.getAttribute("data-svc");
       const photos = (services && Array.isArray(services[id])) ? services[id] : [];
 
-      card.querySelector(".svc-toggle")?.remove();
       card.querySelector(".svc-photos")?.remove();
 
       // Sem foto o card não ganha nada: nem painel, nem rótulo. O

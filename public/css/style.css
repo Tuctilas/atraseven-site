@@ -14,9 +14,16 @@
   --accent-soft:  rgba(22,138,99,0.10);
   --text:         #161a1c;
   --muted:        #5f6b66;
-  --font-display: 'Bebas Neue', sans-serif;
-  --font-cond:    'Barlow Condensed', sans-serif;
-  --font-body:    'Barlow', sans-serif;
+  /* As três pilhas caem em fontes CONDENSADAS antes do sans-serif genérico.
+     Bebas Neue e Barlow Condensed são estreitas; caindo direto no
+     sans-serif do sistema (Arial), o mesmo texto fica ~50% mais largo,
+     estoura os títulos e desalinha os rótulos com letter-spacing — é o
+     "letras estranhas" que aparece quando o Google Fonts não carrega
+     (rede lenta, proxy corporativo ou extensão de privacidade bloqueando
+     fonts.googleapis.com). Arial Narrow existe no Windows e no macOS. */
+  --font-display: 'Bebas Neue', 'Oswald', 'Arial Narrow', Impact, sans-serif;
+  --font-cond:    'Barlow Condensed', 'Roboto Condensed', 'Arial Narrow', sans-serif;
+  --font-body:    'Barlow', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 
   /* Altura reservada para a faixa verde. O hero desconta este valor da
      altura da tela para que a faixa apareça JÁ na primeira visualização,
@@ -265,6 +272,9 @@ nav {
 }
 .hero-actions {
   display: flex;
+  /* wrap para os dois botões descerem um sob o outro em tela estreita —
+     lado a lado eles estouravam a viewport em ~8px a 351px de largura. */
+  flex-wrap: wrap;
   gap: 1.5rem;
   align-items: center;
   animation: fadeUp 1.2s 0.35s cubic-bezier(0.16,1,0.3,1) both;
@@ -572,7 +582,11 @@ footer { border-top:1px solid var(--border); padding:3rem; display:flex; align-i
   .about, .contact { grid-template-columns: 1fr; gap: 3rem; }
   .services-grid { grid-template-columns: 1fr; }
   .diff-grid { grid-template-columns: 1fr 1fr; }
-  footer { flex-direction: column; gap: 1.5rem; text-align: center; }
+  footer { flex-direction: column; gap: 1.5rem; text-align: center; padding: 2.5rem 1.5rem; }
+  /* Sem o wrap, os 5 links viravam uma linha de 389px numa tela de 354px:
+     "Sobre" ficava em left:-34px, cortada fora da tela pela esquerda. */
+  .footer-links { flex-wrap: wrap; justify-content: center; gap: 0.6rem 1.2rem; }
+  .footer-right { align-items: center; }
   .form-row { grid-template-columns: 1fr; }
   .carousel { padding:0 44px; }
   .carousel-arrow { width:38px; height:38px; font-size:1.5rem; }
