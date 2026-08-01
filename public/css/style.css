@@ -35,10 +35,27 @@
      seção seguinte — o que também sinaliza ao visitante que há mais
      conteúdo abaixo. */
   --ticker-h: 45px;   /* 1 linha */
+
+  /* Altura da barra de navegação. Ela é position:fixed, então NÃO ocupa
+     espaço no fluxo: sem reservar este valor no padding-top do hero, o
+     conteúdo passa por baixo dela e o topo do "ATRA" fica cortado. */
+  --nav-h: 70px;
 }
 
 @media (max-width: 1240px) { :root { --ticker-h: 69px; } }  /* 2 linhas */
-@media (max-width: 900px)  { :root { --ticker-h: 74px; } }  /* 3 linhas */
+
+@media (max-width: 900px) {
+  :root {
+    --nav-h: 75px;
+    /* No celular a faixa NÃO é descontada do hero. A conta não fecha:
+       nav 75 + conteúdo 586 + respiro + faixa 74 passa de 800px, e a
+       tela útil do Safari no iPhone é ~700px. Reservar a faixa empurrava
+       o conteúdo para cima até o nome da empresa sumir atrás do nav.
+       Entre faixa visível e nome cortado, o nome ganha. Ela fica logo
+       abaixo da dobra, a um scroll curto. */
+    --ticker-h: 0px;
+  }
+}
 
 html { scroll-behavior: smooth; }
 
@@ -188,7 +205,10 @@ nav {
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  padding: 0 3rem 5rem;
+  /* O padding-top reserva a barra fixa. Como o conteúdo é ancorado ao
+     rodapé (flex-end), sem essa reserva ele sobe por baixo do nav sempre
+     que a tela é curta demais para tudo. */
+  padding: calc(var(--nav-h) + 1rem) 3rem 5rem;
   position: relative;
   overflow: hidden;
   z-index: 1;
@@ -576,7 +596,12 @@ footer { border-top:1px solid var(--border); padding:3rem; display:flex; align-i
   .nav-links-cta { display: block; }
   .nav-links-cta a { color: var(--accent); }
   section { padding: 5rem 1.5rem; }
-  .hero { padding: 0 1.5rem 4rem; }
+  /* Reserva o nav e aperta o respiro: o conteúdo do hero soma 586px, e a
+     tela útil do Safari no iPhone é ~700px. Sem estes cortes, o eyebrow
+     "FUNDADA EM 2014" desaparecia atrás da barra e o "ATRA" era cortado. */
+  .hero { padding: calc(var(--nav-h) + 0.5rem) 1.5rem 2.5rem; }
+  .hero-sub { margin-bottom: 1.75rem; }
+  .hero-actions { gap: 0.9rem; }
   /* fundo de engrenagens bem mais suave no celular, p/ não competir com o texto */
   #redutor-bg { opacity: 0.28; }
   .about, .contact { grid-template-columns: 1fr; gap: 3rem; }
