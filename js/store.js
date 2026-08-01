@@ -98,11 +98,27 @@ export async function saveContent(content) {
 }
 
 /* ── imagens ── */
+// Formatos aceitos e o ContentType com que o objeto é servido. Fixar a
+// partir desta tabela (e não repassar o mime do cliente) impede que um
+// upload seja entregue como text/html ou image/svg+xml pelo bucket.
+const MIME_PERMITIDOS = new Set([
+  "image/jpeg", "image/png", "image/gif", "image/webp", "image/avif",
+]);
+
 export async function saveImage(buffer, name, mime) {
-  const filename = Date.now() + "-" + name;
+  if (!MIME_PERMITIDOS.has(mime)) {
+    throw new Error("Formato de imagem não permitido: " + mime);
+  }
+  // basename descarta qualquer "../" que tenha sobrevivido ao saneamento
+  const filename = Date.now() + "-" + path.basename(name);
   if (useR2) {
     const key = "photos/" + filename;
-    await s3.send(new PutObjectCommand({ Bucket: R2_BUCKET, Key: key, Body: buffer, ContentType: mime }));
+    await s3.send(new PutObjectCommand({
+      Bucket: R2_BUCKET, Key: key, Body: buffer,
+      ContentType: mime,
+      // Impede que o navegador reinterprete o objeto como outro tipo
+      ContentDisposition: "inline",
+    }));
     return R2_PUBLIC_BASE + "/" + key;
   }
   await fs.mkdir(UPLOAD_DIR, { recursive: true });
@@ -115,12 +131,17 @@ export async function deleteImage(url) {
   if (useR2) {
     if (!url.startsWith(R2_PUBLIC_BASE + "/")) return;
     const key = url.slice(R2_PUBLIC_BASE.length + 1);
+    // Só objetos sob photos/, e sem "..": senão a rota de excluir foto
+    // apaga qualquer chave do bucket — inclusive o content.json, que é o
+    // "banco" do site inteiro.
+    if (!key.startsWith("photos/") || key.includes("..")) return;
     await s3.send(new DeleteObjectCommand({ Bucket: R2_BUCKET, Key: key }));
     return;
   }
   const filename = url.split("/uploads/")[1];
   if (!filename) return;
-  await fs.unlink(path.join(UPLOAD_DIR, filename)).catch(() => {});
+  // basename impede que "../../algo" escape da pasta uploads
+  await fs.unlink(path.join(UPLOAD_DIR, path.basename(filename))).catch(() => {});
 }
 
 /* ── normalização/saneamento estrutural ── */

@@ -111,3 +111,11 @@ async function submitForm() {
     timer = setTimeout(() => { count = 0; }, 1200);
   });
 })();
+
+/* ── botão de envio do formulário ──
+   Ligado aqui, e não por onclick= no HTML, para que a CSP possa proibir
+   script inline sem precisar liberar 'unsafe-inline'. */
+(function () {
+  const btn = document.getElementById('f-submit');
+  if (btn) btn.addEventListener('click', submitForm);
+})();

@@ -13,6 +13,12 @@ dotenv.config();
 
 const app = express();
 
+// Atrás do proxy do Render: sem isto, req.ip é o IP interno do proxy — o
+// MESMO para todos os visitantes — e os rate limits viram um balde único
+// global (5 contatos/hora para o site inteiro; qualquer um tranca o login
+// do ADM). O valor 1 confia em exatamente um salto de proxy, o do Render.
+app.set("trust proxy", 1);
+
 const ALLOWED_ORIGINS = [
   process.env.ALLOWED_ORIGIN || "https://atraseven.com.br",
   "https://www.atraseven.com.br",
@@ -56,8 +62,11 @@ const CONTACT_LIMITS = {
   email: 100, setor: 50, mensagem: 2000,
 };
 
+// Remove <>"' e caracteres de controle (CR incluso), preservando \n — a
+// mensagem é multilinha. O \r fora impede injeção de cabeçalho SMTP caso
+// algum campo pare num header de e-mail.
 function sanitize(value) {
-  return String(value).replace(/[<>"']/g, "").trim();
+  return String(value).replace(/[<>"'\u0000-\u0009\u000B-\u001F\u007F]/g, "").trim();
 }
 
 function validateFields(body, limits) {
@@ -104,10 +113,14 @@ app.post("/api/contact", contactLimiter, async (req, res) => {
     };
 
     if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+      const porta = parseInt(process.env.SMTP_PORT || "587");
       const transporter = nodemailer.createTransport({
         host: process.env.SMTP_HOST,
-        port: parseInt(process.env.SMTP_PORT || "587"),
-        secure: false,
+        port: porta,
+        secure: porta === 465,
+        // Aborta se o servidor não oferecer STARTTLS, em vez de seguir em
+        // claro — senão a senha SMTP viaja legível na rede.
+        requireTLS: true,
         auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
       });
 
@@ -117,6 +130,11 @@ app.post("/api/contact", contactLimiter, async (req, res) => {
         subject: `Nova solicitação de orçamento — ${s.nome}`,
         text: `Nome: ${s.nome}\nEmpresa: ${s.empresa}\nTelefone: ${s.telefone}\nE-mail: ${s.email}\nSetor: ${s.setor}\n\nMensagem:\n${s.mensagem}`,
       });
+    } else {
+      // Sem SMTP o pedido é DESCARTADO, mas o visitante vê "enviado com
+      // sucesso". Grita no log para que a perda de contato não passe batida.
+      console.error("[contato] SMTP incompleto (SMTP_HOST/SMTP_USER/SMTP_PASS) — " +
+        `solicitação de "${s.nome}" NÃO foi enviada por e-mail.`);
     }
 
     res.json({ ok: true });
@@ -149,16 +167,30 @@ const adminLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+// Lista de permissão de formatos raster. NÃO usar /^image\//: isso aceita
+// image/svg+xml, e SVG carrega <script> — vira XSS armazenado servido pelo
+// domínio público do bucket. O mimetype vem do cliente, então isto é só a
+// primeira barreira; a segunda é o ContentType fixo no store.
+const MIME_IMAGENS = new Set([
+  "image/jpeg", "image/png", "image/gif", "image/webp", "image/avif",
+]);
+
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB
-  fileFilter: (req, file, cb) => cb(null, /^image\//.test(file.mimetype)),
+  limits: { fileSize: 5 * 1024 * 1024, files: 1 }, // 5 MB
+  fileFilter: (req, file, cb) => cb(null, MIME_IMAGENS.has(file.mimetype)),
 });
+
+// Hash descartável usado só para gastar o mesmo tempo de bcrypt quando o
+// e-mail não confere. Sem isto, e-mail errado responde em ~0,25s e e-mail
+// certo em ~1s, e a diferença entrega qual é a conta do admin.
+const HASH_DUMMY = bcrypt.hashSync(crypto.randomBytes(32).toString("hex"), 10);
 
 // Sem hash configurado o acesso fica bloqueado (fail closed) — nunca há senha padrão.
 async function checkPassword(pw) {
   if (!ADMIN_PASSWORD_HASH) {
     console.error("[ADM] ADMIN_PASSWORD_HASH não definido — acesso administrativo bloqueado.");
+    await bcrypt.compare(pw, HASH_DUMMY);
     return false;
   }
   return bcrypt.compare(pw, ADMIN_PASSWORD_HASH);
@@ -180,8 +212,12 @@ app.post("/api/admin/login", adminLimiter, async (req, res) => {
   try {
     const email = String(req.body.email || "").toLowerCase().trim();
     const password = String(req.body.password || "");
-    const ok = email === ADMIN_EMAIL && (await checkPassword(password));
-    if (!ok) return res.status(401).json({ error: "E-mail ou senha inválidos." });
+    // Sem curto-circuito: bcrypt roda mesmo com e-mail errado (contra o
+    // hash descartável), para que as duas respostas levem o mesmo tempo.
+    const senhaOk = email === ADMIN_EMAIL
+      ? await checkPassword(password)
+      : (await bcrypt.compare(password, HASH_DUMMY), false);
+    if (!senhaOk) return res.status(401).json({ error: "E-mail ou senha inválidos." });
 
     const token = jwt.sign({ sub: email, role: "admin" }, JWT_SECRET, { expiresIn: "8h" });
     res.json({ token });

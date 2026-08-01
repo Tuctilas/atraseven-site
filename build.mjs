@@ -19,6 +19,7 @@ const FILES = [
   "adm.html",
   "privacidade.html",
   "_redirects",
+  "_headers",
   "css/style.css",
   "js/config.js",
   "js/redutor-bg.js",

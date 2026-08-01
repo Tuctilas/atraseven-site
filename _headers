@@ -1,0 +1,27 @@
+# Cloudflare Pages · cabeçalhos de segurança
+#
+# Formato do Pages: um padrão de rota, e abaixo as linhas "Header: valor"
+# indentadas. Vale para o site publicado — a API no Render tem os dela.
+#
+# script-src fica SEM 'unsafe-inline' de propósito: não há <script> inline
+# nem onclick= no HTML (o botão do formulário é ligado em js/main.js). Se
+# algum dia voltar um handler inline, ele para de funcionar — corrija o
+# HTML em vez de afrouxar esta linha.
+#
+# style-src PRECISA de 'unsafe-inline': index.html, adm.html e
+# privacidade.html trazem <style> no <head> e alguns atributos style=".
+# Injeção de CSS é bem menos grave que de script.
+#
+# Domínios liberados:
+#   fonts.googleapis.com  → folha de estilo das fontes
+#   fonts.gstatic.com     → arquivos .woff2 das fontes
+#   pub-*.r2.dev          → fotos enviadas pela área ADM (bucket R2)
+#   atra-seven-api...     → API no Render (conteúdo, contato, login)
+
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://pub-291853dd93d44e30af1ee553fb6378dd.r2.dev; connect-src 'self' https://atra-seven-api.onrender.com; frame-ancestors 'none'; base-uri 'none'; object-src 'none'; form-action 'self'
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=(), usb=()
