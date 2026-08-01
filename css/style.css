@@ -582,6 +582,25 @@ footer { border-top:1px solid var(--border); padding:3rem; display:flex; align-i
   .about, .contact { grid-template-columns: 1fr; gap: 3rem; }
   .services-grid { grid-template-columns: 1fr; }
   .diff-grid { grid-template-columns: 1fr 1fr; }
+  /* ── Toque e leitura no celular ──
+     O Safari do iPhone dá ZOOM automático ao focar qualquer campo com
+     fonte menor que 16px. Os campos estavam em 0.95rem = 15.2px, então a
+     página saltava a cada toque no formulário e o visitante tinha que
+     voltar com os dedos. 16px é o limiar exato; abaixo disso, zoom. */
+  .form-group input,
+  .form-group select,
+  .form-group textarea { font-size: 16px; }
+
+  /* Alvos de toque. A recomendação da Apple e do WCAG é 44px; os links de
+     contato tinham 19px de altura, menor que a ponta de um dedo. O padding
+     cresce a área tocável sem mudar o tamanho da letra. */
+  .contact-row-val a { display: inline-block; padding: 0.5rem 0; }
+  .footer-links a    { display: inline-block; padding: 0.4rem 0; }
+
+  /* O checkbox de consentimento tinha 13px e é OBRIGATÓRIO para enviar o
+     formulário — era o menor alvo da página bloqueando a conversão. */
+  #f-consent { width: 20px; height: 20px; accent-color: var(--accent); }
+
   footer { flex-direction: column; gap: 1.5rem; text-align: center; padding: 2.5rem 1.5rem; }
   /* Sem o wrap, os 5 links viravam uma linha de 389px numa tela de 354px:
      "Sobre" ficava em left:-34px, cortada fora da tela pela esquerda. */
