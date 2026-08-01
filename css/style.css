@@ -462,13 +462,20 @@ footer { border-top:1px solid var(--border); padding:3rem; display:flex; align-i
 
 /* ── CARROSSEL DE APRESENTAÇÃO ── */
 .gallery { border-top:1px solid var(--border); }
+
+/* Descrição + endereço da seção "A EMPRESA". Aparecem sempre; o carrossel
+   abaixo é que só entra quando há foto publicada. */
+.empresa-info { margin-top:2rem; max-width:620px; display:flex; flex-direction:column; gap:1.6rem; }
+.empresa-info p { font-size:1.05rem; line-height:1.8; color:rgba(22,26,28,0.74); margin:0; }
+
 .carousel { position:relative; margin-top:3rem; padding:0 56px; }
+/* Redundante com o atributo hidden, mas explícito: garante que nenhuma
+   regra futura de display reative o carrossel vazio por acidente. */
+.carousel[hidden] { display:none; }
 .carousel-viewport { overflow:hidden; }
 .carousel-track { display:flex; gap:1.5rem; transition:transform 0.55s cubic-bezier(0.16,1,0.3,1); will-change:transform; }
 .slide { flex:0 0 calc((100% - 3rem)/3); aspect-ratio:4/5; border-radius:10px; overflow:hidden; background:var(--surface2); box-shadow:0 16px 38px rgba(0,0,0,0.14); }
 .slide img { width:100%; height:100%; object-fit:cover; display:block; }
-.slide.ph { display:flex; align-items:center; justify-content:center; background:radial-gradient(circle at 30% 30%, var(--accent-soft), transparent 60%), var(--surface2); box-shadow:none; }
-.slide.ph span { font-size:2.6rem; opacity:0.4; }
 .carousel-arrow { position:absolute; top:50%; transform:translateY(-50%); z-index:3; width:46px; height:46px; border-radius:50%; border:1px solid var(--border); background:#fff; color:var(--accent); font-size:1.9rem; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 14px rgba(0,0,0,0.1); transition:background 0.2s, color 0.2s; }
 .carousel-arrow:hover { background:var(--accent); color:#fff; }
 .carousel-arrow.prev { left:0; }

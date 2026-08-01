@@ -45,21 +45,30 @@
 
   function buildCarousel(photos) {
     track = document.getElementById("pres-track");
+    const carousel = document.getElementById("pres-carousel");
     if (!track) return;
     track.innerHTML = "";
-    const list = (photos && photos.length) ? photos : placeholders(6);
+
+    const list = (photos && photos.length) ? photos : [];
+
+    // Sem foto publicada, o carrossel inteiro sai do ar — inclusive setas e
+    // bolinhas. Antes eram exibidos 6 placeholders de engrenagem, que faziam
+    // a seção parecer inacabada. Nesse caso resta só a descrição e o
+    // endereço, que já estão no HTML.
+    if (!list.length) {
+      if (carousel) carousel.hidden = true;
+      stopAuto();
+      return;
+    }
+    if (carousel) carousel.hidden = false;
+
     list.forEach((p) => {
       const slide = document.createElement("div");
       slide.className = "slide";
-      if (p.placeholder) {
-        slide.classList.add("ph");
-        slide.innerHTML = "<span>⚙️</span>";
-      } else {
-        const img = document.createElement("img");
-        img.src = p.url; img.alt = p.caption || "Foto ATRA SEVEN"; img.loading = "lazy";
-        if (p.position) img.style.objectPosition = p.position;
-        slide.appendChild(img);
-      }
+      const img = document.createElement("img");
+      img.src = p.url; img.alt = p.caption || "Foto ATRA SEVEN"; img.loading = "lazy";
+      if (p.position) img.style.objectPosition = p.position;
+      slide.appendChild(img);
       track.appendChild(slide);
     });
     cur = 0;
@@ -67,10 +76,6 @@
     recalc();
     startAuto();
     window.addEventListener("resize", recalc);
-  }
-
-  function placeholders(n) {
-    return Array.from({ length: n }, () => ({ placeholder: true }));
   }
 
   function metrics() {

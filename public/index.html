@@ -27,13 +27,24 @@
 
 <!-- Dados estruturados: ajudam o Google a mostrar nome, telefone e área de
      atuação corretos no resultado de busca, em vez de deduzir do texto.
-     Contém APENAS o que a empresa já publica nesta página — sem endereço
-     nem CNPJ, que o site não divulga. -->
+     Contém APENAS o que a empresa publica nesta página. O endereço foi
+     informado pelo próprio dono — não veio de diretório de terceiros, que
+     divulgam dados divergentes e telefones que não são os da empresa.
+     O tipo é LocalBusiness (e não Organization) porque há endereço: é o
+     que alimenta a busca local, do tipo "atra seven ibirité". -->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
-  "@type": "Organization",
+  "@type": "LocalBusiness",
   "name": "ATRA SEVEN",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "Rua Pará, 772 - Nossa Senhora de Lourdes",
+    "addressLocality": "Ibirité",
+    "addressRegion": "MG",
+    "postalCode": "32400-000",
+    "addressCountry": "BR"
+  },
   "legalName": "ATRA SEVEN Assistência Técnica em Redutores e Acoplamentos",
   "url": "https://www.atraseven.com.br/",
   "foundingDate": "2014",
@@ -179,8 +190,25 @@
   <div class="reveal">
     <div class="section-label">Conheça de perto</div>
     <h2 class="section-title">A <span class="accent">EMPRESA</span></h2>
+    <div class="empresa-info">
+      <p>Atendemos em oficina própria e no campo, deslocando equipe até a planta
+         do cliente conforme a necessidade de cada serviço.</p>
+      <div class="contact-row">
+        <span class="contact-row-label">Endereço</span>
+        <span class="contact-row-val">
+          <a href="https://www.google.com/maps/search/?api=1&amp;query=Rua+Par%C3%A1%2C+772+-+Nossa+Senhora+de+Lourdes%2C+Ibirit%C3%A9+-+MG%2C+32400-000"
+             target="_blank" rel="noopener">
+            Rua Pará, 772 &middot; Nossa Senhora de Lourdes<br>
+            Ibirité &middot; MG, 32400-000
+          </a>
+        </span>
+      </div>
+    </div>
   </div>
-  <div class="carousel reveal" id="pres-carousel">
+  <!-- Fica oculto por padrão: content.js só exibe se houver foto publicada.
+       Antes eram mostrados 6 placeholders de engrenagem, que davam ao
+       visitante a impressão de site inacabado. -->
+  <div class="carousel reveal" id="pres-carousel" hidden>
     <button class="carousel-arrow prev" id="pres-prev" aria-label="Foto anterior">‹</button>
     <div class="carousel-viewport">
       <div class="carousel-track" id="pres-track"><!-- slides via content.js --></div>
