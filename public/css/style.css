@@ -17,7 +17,21 @@
   --font-display: 'Bebas Neue', sans-serif;
   --font-cond:    'Barlow Condensed', sans-serif;
   --font-body:    'Barlow', sans-serif;
+
+  /* Altura reservada para a faixa verde. O hero desconta este valor da
+     altura da tela para que a faixa apareça JÁ na primeira visualização,
+     em vez de só depois do primeiro scroll. O valor muda porque a lista
+     quebra em mais linhas conforme a tela estreita.
+
+     Alturas medidas no navegador (39/63/68px) mais 6px de folga, para a
+     faixa não encostar na borda inferior e deixar aparecer uma nesga da
+     seção seguinte — o que também sinaliza ao visitante que há mais
+     conteúdo abaixo. */
+  --ticker-h: 45px;   /* 1 linha */
 }
+
+@media (max-width: 1240px) { :root { --ticker-h: 69px; } }  /* 2 linhas */
+@media (max-width: 900px)  { :root { --ticker-h: 74px; } }  /* 3 linhas */
 
 html { scroll-behavior: smooth; }
 
@@ -59,7 +73,6 @@ body::before {
 @keyframes fadeUp      { from { opacity: 0; transform: translateY(60px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes gridDrift   { from { transform: translate(0,0); } to { transform: translate(80px,80px); } }
 @keyframes orbFloat    { from { transform: translate(0,0) scale(1); } to { transform: translate(30px,-30px) scale(1.05); } }
-@keyframes ticker      { from { transform: translateX(0); }  to { transform: translateX(-50%); } }
 @keyframes pulse       { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
 
 .gear-spin     { animation: gearSpin    4s linear infinite; transform-origin: 50% 50%; }
@@ -159,7 +172,12 @@ nav {
 
 /* ── HERO ── */
 .hero {
-  min-height: 100vh;
+  min-height: calc(100vh - var(--ticker-h));
+  /* svh = altura da viewport MENOR (com as barras do navegador móvel
+     visíveis). Sem isto, no celular o 100vh conta a tela sem as barras,
+     o hero fica alto demais e empurra a faixa para fora da dobra —
+     exatamente o problema que estamos corrigindo. */
+  min-height: calc(100svh - var(--ticker-h));
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
@@ -300,13 +318,22 @@ nav {
 .avail-dot { width:8px; height:8px; border-radius:50%; background:var(--accent); animation: pulse 2s infinite; }
 
 /* ── TICKER ── */
-.ticker { background:var(--accent); padding:0.6rem 0; overflow:hidden; white-space:nowrap; position:relative; z-index:1; }
-.ticker-inner { display:inline-flex; gap:4rem; animation: ticker 30s linear infinite; }
+/* Faixa estática: sem animação, sem overflow escondido e sem nowrap — em
+   telas estreitas ela quebra em linhas em vez de cortar o texto. O gap de
+   4rem era folgado porque a lista deslizava; parada e centralizada, esse
+   espaçamento deixaria buracos entre as palavras. */
+.ticker { background:var(--accent); padding:0.7rem 1.5rem; position:relative; z-index:1; }
+/* gap e letter-spacing calibrados para a lista caber em UMA linha até
+   1280px de viewport. Com os 0.2em e 4rem originais ela quebrava em duas
+   linhas já no desktop, virando um bloco alto onde antes havia uma tira
+   fina. A folga considera a barra de rolagem vertical, que rouba ~15px
+   e não aparece no innerWidth. */
+.ticker-inner { display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:0.5rem 0.9rem; }
 .ticker-inner span {
   font-family: var(--font-cond);
   font-size: 0.8rem;
   font-weight: 600;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--bg);
 }
@@ -500,6 +527,14 @@ footer { border-top:1px solid var(--border); padding:3rem; display:flex; align-i
 
 /* ── RESPONSIVE ── */
 @media (max-width: 900px) {
+  /* Sem a animação a faixa quebra em linhas, e com o espaçamento de
+     desktop ela virava um bloco de 5 linhas e ~134px no celular — alto
+     demais para uma tira decorativa. Aperta letra e espaçamento para
+     caber em ~3 linhas. */
+  .ticker { padding: 0.6rem 1rem; }
+  .ticker-inner { gap: 0.3rem 0.9rem; }
+  .ticker-inner span { font-size: 0.7rem; letter-spacing: 0.1em; }
+
   nav { padding: 1rem 1.5rem; }
   .nav-toggle { display: flex; }
   .nav-cta { display: none; }
