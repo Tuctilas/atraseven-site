@@ -22,3 +22,6 @@ Thumbs.db
 # Pastas de build de deploy (Cloudflare Pages)
 dist-site/
 dist-prototipo/
+
+# Estado local do wrangler (cache/config da CLI do Cloudflare)
+.wrangler/

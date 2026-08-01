@@ -1,7 +1,14 @@
 # ============================================================
 # ATRA SEVEN · redirecionamento do domínio raiz para o www
 #
-# ONDE VAI: raiz do public_html no cPanel da HostGator.
+# ONDE VAI: /home/USUARIO/public_html/.htaccess
+#
+# ATENÇÃO: NÃO é o .htaccess da pasta home (/home/USUARIO/), que
+# fica um nível acima e convive com .bashrc, logs/, mail/ e ssl/.
+# Aquele é da conta e tem outras regras. O Apache lê os dois, mas
+# um .htaccess mais profundo DESCARTA as regras de rewrite dos
+# diretórios acima — então a regra abaixo só funciona aqui.
+#
 # NÃO faz parte do build do Cloudflare Pages — é o arquivo que
 # fica no servidor da HostGator, no lugar do site Weebly antigo.
 #
