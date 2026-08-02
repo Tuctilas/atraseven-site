@@ -13,5 +13,5 @@
   // pode ficar no código versionado. A secret correspondente NÃO fica
   // aqui: vai em TURNSTILE_SECRET no Render. Enquanto vazio, o widget não
   // é renderizado e o formulário funciona sem verificação.
-  window.ATRA_TURNSTILE_SITEKEY = '';
+  window.ATRA_TURNSTILE_SITEKEY = '0x4AAAAAAEEoW9CwqX240D1R';
 })();
