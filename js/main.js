@@ -28,6 +28,31 @@ document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
   menu.querySelectorAll('a').forEach(a => a.addEventListener('click', close));
 })();
 
+/* ── Cloudflare Turnstile ──
+   Carrega o script anti-bot e renderiza o widget SÓ quando há sitekey em
+   config.js. Sem sitekey, NADA de challenges.cloudflare.com é carregado —
+   zero dependência de terceiros até a proteção estar de fato configurada.
+   O formulário segue funcionando (a API também degrada aberta nesse caso).
+   config.js carrega antes deste arquivo, então a sitekey já está definida. */
+let turnstileWidgetId = null;
+(function carregarTurnstile() {
+  const sitekey = window.ATRA_TURNSTILE_SITEKEY;
+  if (!sitekey || !document.getElementById('ts-widget')) return;
+  const s = document.createElement('script');
+  s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+  s.async = true; s.defer = true;
+  s.onload = function () {
+    if (!window.turnstile) return;
+    try {
+      turnstileWidgetId = window.turnstile.render('#ts-widget', {
+        sitekey: sitekey,
+        action: 'turnstile-spin-v1',
+      });
+    } catch (_) { /* indisponível — o form degrada aberto */ }
+  };
+  document.head.appendChild(s);
+})();
+
 async function submitForm() {
   const messageArea = document.getElementById('f-msg');
 
@@ -55,6 +80,11 @@ async function submitForm() {
     return;
   }
 
+  // Token do Turnstile (vazio se o widget não estiver ativo). A API só
+  // exige quando TURNSTILE_SECRET está definido no Render.
+  const tsToken = (window.turnstile && turnstileWidgetId !== null)
+    ? window.turnstile.getResponse(turnstileWidgetId) : '';
+
   const btn = document.querySelector('.contact-form .btn-primary');
   if (btn) { btn.disabled = true; btn.textContent = 'Enviando...'; }
 
@@ -62,7 +92,7 @@ async function submitForm() {
     const response = await fetch((window.ATRA_API || "https://atra-seven-api.onrender.com") + "/api/contact", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ nome, empresa, telefone, email, setor, mensagem, website, consent }),
+      body: JSON.stringify({ nome, empresa, telefone, email, setor, mensagem, website, consent, "cf-turnstile-response": tsToken }),
     });
 
     const data = await response.json();
@@ -84,6 +114,11 @@ async function submitForm() {
     alert('Erro ao conectar com o servidor. Tente novamente.');
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = 'Enviar Solicitação'; }
+    // O token do Turnstile é de uso único: zera para o próximo envio, seja
+    // após sucesso ou erro, senão a segunda tentativa reusa um token gasto.
+    if (window.turnstile && turnstileWidgetId !== null) {
+      try { window.turnstile.reset(turnstileWidgetId); } catch (_) {}
+    }
   }
 }
 

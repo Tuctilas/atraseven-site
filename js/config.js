@@ -8,4 +8,10 @@
   window.ATRA_API = isLocal
     ? 'http://localhost:3000'
     : 'https://atra-seven-api.onrender.com';
+
+  // Sitekey do Cloudflare Turnstile (anti-bot do formulário). É PÚBLICO —
+  // pode ficar no código versionado. A secret correspondente NÃO fica
+  // aqui: vai em TURNSTILE_SECRET no Render. Enquanto vazio, o widget não
+  // é renderizado e o formulário funciona sem verificação.
+  window.ATRA_TURNSTILE_SITEKEY = '';
 })();

@@ -17,9 +17,11 @@
 #   fonts.gstatic.com     → arquivos .woff2 das fontes
 #   pub-*.r2.dev          → fotos enviadas pela área ADM (bucket R2)
 #   atra-seven-api...     → API no Render (conteúdo, contato, login)
+#   challenges.cloudflare.com → Turnstile: o script do widget (script-src)
+#                               e o iframe do desafio (frame-src)
 
 /*
-  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://pub-291853dd93d44e30af1ee553fb6378dd.r2.dev; connect-src 'self' https://atra-seven-api.onrender.com; frame-ancestors 'none'; base-uri 'none'; object-src 'none'; form-action 'self'
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://pub-291853dd93d44e30af1ee553fb6378dd.r2.dev; connect-src 'self' https://atra-seven-api.onrender.com; frame-src https://challenges.cloudflare.com; frame-ancestors 'none'; base-uri 'none'; object-src 'none'; form-action 'self'
   X-Frame-Options: DENY
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin

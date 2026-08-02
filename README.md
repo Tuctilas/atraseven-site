@@ -212,6 +212,25 @@ Para eliminar de vez, as opções são: fixar 1 instância no Render, um store
 compartilhado (Redis), ou **Cloudflare Turnstile** no formulário de
 contato (recomendado contra flood de e-mail, resolve na borda).
 
+### Cloudflare Turnstile (anti-bot do formulário)
+
+O código já está integrado, mas **inerte até ser ativado**. A validação
+roda na própria API (`/api/contact`), não num Worker à parte. Para ligar:
+
+1. Cloudflare → **Turnstile** → *Add widget*: nome livre, hostnames
+   `atraseven.com.br` e `www.atraseven.com.br` (e `localhost` para testar),
+   modo **Managed**. Isso gera um **sitekey** (público) e uma **secret**.
+2. Cole o sitekey em `window.ATRA_TURNSTILE_SITEKEY`, em `js/config.js`,
+   e rode `npm run build && git commit && git push`.
+3. No Render, defina `TURNSTILE_SECRET` com a secret. **Save Changes.**
+
+Degrada aberto de propósito: sem sitekey no front, nada de
+`challenges.cloudflare.com` é carregado; sem `TURNSTILE_SECRET` no Render,
+a validação é pulada (mas grita no log em produção). Assim o formulário
+nunca quebra durante a virada — só passa a exigir o desafio quando os dois
+lados estão configurados. A CSP em `_headers` já libera o domínio do
+Turnstile (`script-src` e `frame-src`).
+
 ## Tecnologias
 
 - HTML5 / CSS3 / JavaScript (vanilla, sem frameworks)

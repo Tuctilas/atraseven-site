@@ -85,6 +85,36 @@ function validateFields(body, limits) {
 
 const DESTINO_CONTATO = process.env.CONTACT_EMAIL || "vendas@atraseven.com.br";
 
+// ── Cloudflare Turnstile (anti-bot no formulário) ──
+// A validação roda AQUI, na API que já controlamos, e não num Worker à
+// parte. A secret fica só no ambiente (TURNSTILE_SECRET no Render); o
+// sitekey é público e vai no front. Sem a secret, a checagem é pulada
+// (fail-open) para não travar o form em desenvolvimento nem durante a
+// virada — mas grita no startup em produção, para a proteção nunca ficar
+// desligada em silêncio, como aconteceu antes com o SMTP.
+const TURNSTILE_SECRET = process.env.TURNSTILE_SECRET || "";
+if (!TURNSTILE_SECRET && process.env.NODE_ENV === "production") {
+  console.error("[turnstile] TURNSTILE_SECRET não definido — o formulário " +
+    "de contato está SEM proteção anti-bot. Defina no Render.");
+}
+
+async function turnstileOk(token, ip) {
+  if (!TURNSTILE_SECRET) return true;   // não configurado → não bloqueia
+  if (!token) return false;
+  try {
+    const r = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ secret: TURNSTILE_SECRET, response: token, remoteip: ip }),
+      signal: AbortSignal.timeout(8000),
+    });
+    const data = await r.json().catch(() => ({}));
+    return data.success === true;
+  } catch {
+    return false;   // erro de rede na validação → rejeita (fail-closed)
+  }
+}
+
 /**
  * Envia a solicitação do formulário por HTTP (Resend) ou, na falta dele,
  * por SMTP.
@@ -176,6 +206,13 @@ app.post("/api/contact", contactLimiter, async (req, res) => {
     // Honeypot: campo invisível que só bots preenchem. Respondemos 200 sem enviar nada.
     if (website) {
       return res.json({ ok: true });
+    }
+
+    // Turnstile: barra robôs antes de qualquer trabalho. Ao contrário do
+    // rate limit (por instância), atua na borda da Cloudflare e independe
+    // de quantas instâncias o Render roda.
+    if (!(await turnstileOk(req.body["cf-turnstile-response"], req.ip))) {
+      return res.status(403).json({ error: "Verificação anti-robô falhou. Recarregue a página e tente novamente." });
     }
 
     if (!nome || !mensagem) {

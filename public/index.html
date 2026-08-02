@@ -66,6 +66,7 @@
   ]
 }
 </script>
+
 </head>
 <body>
 
@@ -391,6 +392,10 @@
       <input type="checkbox" id="f-consent" style="margin-top:0.2rem;flex-shrink:0;">
       <span>Concordo que a ATRA SEVEN trate os dados informados com a finalidade exclusiva de responder a esta solicitação de orçamento, conforme a <a href="privacidade.html" target="_blank" rel="noopener">Política de Privacidade</a>.</span>
     </label>
+
+    <!-- Turnstile: o widget é renderizado por js/main.js só quando há
+         sitekey configurada em config.js. Vazio, some sem afetar o form. -->
+    <div id="ts-widget" style="margin:0.4rem 0;"></div>
 
     <button class="btn-primary" id="f-submit" style="width:100%;font-size:0.85rem;margin-top:0.5rem;">
       Enviar Solicitação
