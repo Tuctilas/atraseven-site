@@ -13,6 +13,10 @@ dotenv.config();
 
 const app = express();
 
+// Não anunciar "X-Powered-By: Express" — dá de graça a um atacante a pilha
+// e a versão para casar com CVEs conhecidas.
+app.disable("x-powered-by");
+
 // Atrás do proxy do Render: sem isto, req.ip é o IP interno do proxy — o
 // MESMO para todos os visitantes — e os rate limits viram um balde único
 // global (5 contatos/hora para o site inteiro; qualquer um tranca o login
@@ -166,9 +170,6 @@ async function enviarSolicitacao(s) {
 }
 
 app.post("/api/contact", contactLimiter, async (req, res) => {
-  // Declarado FORA do try porque o catch precisa dele: é lá que a
-  // solicitação vai para o log quando o envio falha.
-  let s = null;
   try {
     const { nome, empresa, telefone, email, setor, mensagem, website, consent } = req.body;
 
@@ -192,7 +193,7 @@ app.post("/api/contact", contactLimiter, async (req, res) => {
     const validationError = validateFields(req.body, CONTACT_LIMITS);
     if (validationError) return res.status(400).json({ error: validationError });
 
-    s = {
+    const s = {
       nome:      sanitize(nome),
       empresa:   empresa   ? sanitize(empresa)   : "Não informado",
       telefone:  telefone  ? sanitize(telefone)  : "Não informado",
@@ -205,11 +206,13 @@ app.post("/api/contact", contactLimiter, async (req, res) => {
 
     res.json({ ok: true });
   } catch (error) {
-    // Registra a solicitação inteira: se o envio falhar, este log é a
-    // única cópia do contato do cliente. Sem isso o pedido some.
-    console.error("[contato] FALHA NO ENVIO:", error.message);
-    console.error("[contato] solicitação perdida —",
-      JSON.stringify({ nome: s?.nome, empresa: s?.empresa, telefone: s?.telefone, email: s?.email }));
+    // NÃO registra os dados do visitante (nome, e-mail, telefone). A
+    // solicitação de orçamento existe só para virar e-mail e não deve
+    // ficar guardada em lugar nenhum — nem nos logs do Render. Registra
+    // apenas QUE falhou e por quê, para diagnosticar o SMTP/Resend. O
+    // visitante já recebe erro na tela e tem o botão do WhatsApp como
+    // alternativa, então nenhum contato fica preso aqui.
+    console.error("[contato] falha no envio (sem dados pessoais):", error.message);
     res.status(500).json({ error: "Erro ao enviar solicitação." });
   }
 });
@@ -340,6 +343,23 @@ app.delete("/api/admin/photo", requireAuth, async (req, res) => {
     console.error("Erro ao excluir foto:", e.message);
     res.status(500).json({ error: "Erro ao excluir a imagem." });
   }
+});
+
+// 404 em JSON — sem isto o Express responde com a página HTML "Cannot GET",
+// que anuncia o framework e destoa de uma API JSON.
+app.use((req, res) => {
+  res.status(404).json({ error: "Recurso não encontrado." });
+});
+
+// Handler de erro final. Uniformiza qualquer exceção (inclusive a rejeição
+// do CORS, que antes virava um 500 com HTML de stack) numa resposta JSON
+// enxuta, sem vazar mensagem interna nem stack trace ao cliente.
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, next) => {
+  const corsBloqueado = err && /CORS/i.test(err.message || "");
+  if (!corsBloqueado) console.error("Erro não tratado:", err.message);
+  res.status(corsBloqueado ? 403 : 500)
+    .json({ error: corsBloqueado ? "Origem não permitida." : "Erro interno." });
 });
 
 app.listen(process.env.PORT || 3000, () => {

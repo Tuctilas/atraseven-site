@@ -185,16 +185,32 @@ node -e "console.log(require('bcryptjs').compareSync(process.argv[1],process.arg
 | `store.js` | `deleteImage` exige prefixo `photos/` | Sem isso a rota de excluir foto apaga qualquer chave do bucket, inclusive o `content.json`, que é o "banco" do site |
 | `api-example.js` | `bcrypt` roda mesmo com e-mail errado | Sem o hash descartável, e-mail certo responde em ~1s e errado em ~0,25s, revelando qual é a conta do admin |
 | `api-example.js` | `requireTLS: true` no SMTP | Sem isso, se o servidor não oferecer STARTTLS a senha SMTP viaja em texto puro |
+| `api-example.js` | `app.disable("x-powered-by")` | Não anunciar o framework/versão para casamento com CVEs |
+| `api-example.js` | Handlers 404 e de erro em JSON | Sem eles, o Express responde a página HTML "Cannot GET" e transforma a rejeição de CORS num 500 com stack |
 
-Se o formulário de contato parar de chegar, procure no log do Render por
-`[contato] FALHA NO ENVIO`. A linha seguinte, `[contato] solicitação
-perdida`, traz nome, empresa, telefone e e-mail de quem tentou falar com
-a empresa — é a cópia de recuperação do contato.
+### Privacidade das solicitações de orçamento
 
-O envio nunca responde "sucesso" sem ter saído: se o Resend recusar, a
-rota devolve 500 e o visitante vê o erro. Antes desta correção o pedido
-era descartado em silêncio com o visitante vendo "enviado com sucesso",
-e foi assim que meses de solicitações se perderam.
+O formulário de contato **não guarda nada**. A solicitação existe só para
+virar e-mail (via Resend) e não é gravada em banco, no R2, nem em disco.
+Nada a apagar depois do envio, porque nada é retido.
+
+Em caso de FALHA no envio, o log registra apenas o motivo do erro — nunca
+nome, e-mail ou telefone do visitante. O envio também nunca responde
+"sucesso" sem ter saído: se o Resend recusar, a rota devolve 500 e o
+visitante vê o erro, com o botão do WhatsApp como alternativa. Procure no
+log do Render por `[contato] falha no envio` para diagnosticar o Resend.
+
+### Limitação conhecida: rate limit por instância
+
+Os limites de tentativas (`express-rate-limit`) usam memória local. Se o
+Render rodar **mais de uma instância** da API, cada uma tem seu próprio
+contador, e a proteção fica multiplicada pelo número de instâncias (um
+teste real mostrou o contador saltando entre requisições). Para o login
+isso é só defesa em profundidade — a proteção real é o bcrypt sobre uma
+senha forte, que torna a força bruta online inviável de qualquer modo.
+Para eliminar de vez, as opções são: fixar 1 instância no Render, um store
+compartilhado (Redis), ou **Cloudflare Turnstile** no formulário de
+contato (recomendado contra flood de e-mail, resolve na borda).
 
 ## Tecnologias
 
