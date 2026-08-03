@@ -16,8 +16,8 @@
   window.ATRA_TURNSTILE_SITEKEY = '0x4AAAAAAEEoW9CwqX240D1R';
 
   // Token do Cloudflare Web Analytics (medição de acessos, sem cookies).
-  // É PÚBLICO. Pegue em: Cloudflare → Analytics & Logs → Web Analytics →
-  // "Add a site" (atraseven.com.br) → copie o token do snippet. Enquanto
-  // vazio, nenhum script de medição é carregado (ver js/main.js).
-  window.ATRA_CF_ANALYTICS_TOKEN = '';
+  // É PÚBLICO. É SÓ o token (o campo "token" do snippet do Cloudflare), não o
+  // <script> inteiro — o js/main.js monta o beacon a partir daqui. Enquanto
+  // vazio, nenhum script de medição é carregado.
+  window.ATRA_CF_ANALYTICS_TOKEN = '08808c3ae0cc49998f7fa3db30d8845c';
 })();
