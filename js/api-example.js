@@ -269,6 +269,45 @@ if (!process.env.JWT_SECRET) {
   console.warn("[ADM] JWT_SECRET não definido — usando segredo aleatório desta execução. Defina JWT_SECRET no ambiente.");
 }
 
+/* ── senha do admin: hash efetivo + cifragem do hash salvo ──
+   A senha pode ser trocada pela área ADM (POST /api/admin/password). O novo
+   hash bcrypt é persistido pelo store, mas CIFRADO com AES-GCM: assim ele
+   nunca vaza, mesmo que o objeto do bucket seja lido. A chave deriva do
+   JWT_SECRET (que já precisa ser estável em produção) — se o JWT_SECRET
+   mudar, o hash salvo deixa de decifrar e o login cai no ADMIN_PASSWORD_HASH
+   do ambiente. Por isso a troca de senha SÓ persiste se JWT_SECRET estiver
+   definido no Render. */
+const ADMIN_ENC_KEY = crypto.createHash("sha256").update("atra-admin-hash:" + JWT_SECRET).digest();
+
+function encryptHash(hash) {
+  const iv = crypto.randomBytes(12);
+  const c = crypto.createCipheriv("aes-256-gcm", ADMIN_ENC_KEY, iv);
+  const ct = Buffer.concat([c.update(String(hash), "utf8"), c.final()]);
+  return [iv.toString("base64"), c.getAuthTag().toString("base64"), ct.toString("base64")].join(".");
+}
+function decryptHash(blob) {
+  try {
+    const [ivB, tagB, ctB] = String(blob).split(".");
+    if (!ivB || !tagB || !ctB) return "";
+    const d = crypto.createDecipheriv("aes-256-gcm", ADMIN_ENC_KEY, Buffer.from(ivB, "base64"));
+    d.setAuthTag(Buffer.from(tagB, "base64"));
+    return Buffer.concat([d.update(Buffer.from(ctB, "base64")), d.final()]).toString("utf8");
+  } catch { return ""; }
+}
+
+// Hash em vigor: o salvo pela área ADM tem prioridade; na falta, o do
+// ambiente. Cacheado por 10s para não consultar o store a cada login.
+let hashCache = { value: null, at: 0 };
+async function effectiveHash() {
+  const now = Date.now();
+  if (hashCache.value !== null && now - hashCache.at < 10000) return hashCache.value;
+  let stored = "";
+  try { stored = decryptHash(await store.getAdminSecret()); } catch { /* store fora do ar → env */ }
+  const h = stored || ADMIN_PASSWORD_HASH;
+  hashCache = { value: h, at: now };
+  return h;
+}
+
 const adminLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 10,
@@ -298,12 +337,13 @@ const HASH_DUMMY = bcrypt.hashSync(crypto.randomBytes(32).toString("hex"), 10);
 
 // Sem hash configurado o acesso fica bloqueado (fail closed) — nunca há senha padrão.
 async function checkPassword(pw) {
-  if (!ADMIN_PASSWORD_HASH) {
-    console.error("[ADM] ADMIN_PASSWORD_HASH não definido — acesso administrativo bloqueado.");
+  const hash = await effectiveHash();
+  if (!hash) {
+    console.error("[ADM] Sem senha configurada (nem salva nem em ADMIN_PASSWORD_HASH) — acesso administrativo bloqueado.");
     await bcrypt.compare(pw, HASH_DUMMY);
     return false;
   }
-  return bcrypt.compare(pw, ADMIN_PASSWORD_HASH);
+  return bcrypt.compare(pw, hash);
 }
 
 function requireAuth(req, res, next) {
@@ -334,6 +374,30 @@ app.post("/api/admin/login", adminLimiter, async (req, res) => {
   } catch (e) {
     console.error("Erro no login ADM:", e.message);
     res.status(500).json({ error: "Erro interno." });
+  }
+});
+
+// alterar a senha do admin (autenticado + confirma a senha atual)
+app.post("/api/admin/password", requireAuth, async (req, res) => {
+  try {
+    const current = String(req.body.currentPassword || "");
+    const next = String(req.body.newPassword || "");
+    if (next.length < 10) return res.status(400).json({ error: "A nova senha precisa ter ao menos 10 caracteres." });
+    if (next.length > 200) return res.status(400).json({ error: "Senha muito longa." });
+    // "atual" na mensagem: o front distingue disto uma sessão expirada (401 do requireAuth).
+    if (!(await checkPassword(current))) return res.status(401).json({ error: "Senha atual incorreta." });
+    if (!process.env.JWT_SECRET) {
+      // Sem JWT_SECRET fixo, a chave de cifragem muda a cada restart e a nova
+      // senha se perderia silenciosamente. Melhor recusar e avisar.
+      return res.status(503).json({ error: "Defina JWT_SECRET no servidor antes de trocar a senha (senão a mudança não persiste)." });
+    }
+    const hash = await bcrypt.hash(next, 12);
+    await store.setAdminSecret(encryptHash(hash));
+    hashCache = { value: hash, at: Date.now() };
+    res.json({ ok: true });
+  } catch (e) {
+    console.error("Erro ao alterar senha ADM:", e.message);
+    res.status(500).json({ error: "Erro ao alterar a senha." });
   }
 });
 

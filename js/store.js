@@ -97,6 +97,45 @@ export async function saveContent(content) {
   return data;
 }
 
+/* ── segredo do admin (hash de senha, já CIFRADO pela API) ──
+   Fica SEPARADO do content.json de propósito: aquele é servido publicamente
+   por GET /api/content e não pode carregar segredo nenhum. Aqui guardamos um
+   blob opaco (a API cifra antes de gravar e decifra ao ler), então mesmo que
+   este objeto seja lido, não revela a senha.
+   Local (dev): .admin-secret.json na RAIZ — fora de data/, que o build publica,
+   e no .gitignore. Produção: objeto admin.json no mesmo bucket R2. */
+const ADMIN_KEY = "admin.json";
+const ADMIN_FILE = path.join(ROOT, ".admin-secret.json");
+
+export async function getAdminSecret() {
+  if (useR2) {
+    try {
+      const r = await s3.send(new GetObjectCommand({ Bucket: R2_BUCKET, Key: ADMIN_KEY }));
+      const j = JSON.parse(await r.Body.transformToString());
+      return typeof j.secret === "string" ? j.secret : "";
+    } catch (e) {
+      if (e.name === "NoSuchKey" || e.$metadata?.httpStatusCode === 404) return "";
+      throw e;
+    }
+  }
+  try {
+    const j = JSON.parse(await fs.readFile(ADMIN_FILE, "utf8"));
+    return typeof j.secret === "string" ? j.secret : "";
+  } catch { return ""; }
+}
+
+export async function setAdminSecret(secret) {
+  const body = JSON.stringify({ secret: String(secret || "") });
+  if (useR2) {
+    await s3.send(new PutObjectCommand({
+      Bucket: R2_BUCKET, Key: ADMIN_KEY, Body: body, ContentType: "application/json",
+    }));
+    return;
+  }
+  await fs.mkdir(path.dirname(ADMIN_FILE), { recursive: true });
+  await fs.writeFile(ADMIN_FILE, body, "utf8");
+}
+
 /* ── imagens ── */
 // Formatos aceitos e o ContentType com que o objeto é servido. Fixar a
 // partir desta tabela (e não repassar o mime do cliente) impede que um

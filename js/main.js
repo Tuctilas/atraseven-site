@@ -126,17 +126,22 @@ async function submitForm() {
    sempre abertas (ver buildServicePanels em content.js), então não há
    mais nada para abrir nem fechar ao clicar. */
 
-/* ── porta dos fundos: 3 cliques no logo "ATRA SEVEN" abrem a área ADM ── */
-(function () {
-  const logo = document.querySelector('.nav-logo');
-  if (!logo) return;
-  let count = 0, timer = null;
-  logo.addEventListener('click', () => {
-    count++;
-    clearTimeout(timer);
-    if (count >= 3) { count = 0; window.location.href = 'adm.html'; return; }
-    timer = setTimeout(() => { count = 0; }, 1200);
-  });
+/* O acesso à área ADM saiu do gesto de 3 cliques no logo e virou um link
+   discreto "Área administrativa" no rodapé (ver index.html). Um link normal
+   é mais previsível e não depende de o visitante descobrir um gesto secreto. */
+
+/* ── Cloudflare Web Analytics ──
+   Carrega o beacon (medição sem cookies) SÓ quando há token em config.js.
+   Sem token, nada de static.cloudflareinsights.com é carregado — mesmo
+   princípio do Turnstile: zero terceiros até estar de fato configurado. */
+(function carregarAnalytics() {
+  const token = window.ATRA_CF_ANALYTICS_TOKEN;
+  if (!token) return;
+  const s = document.createElement('script');
+  s.src = 'https://static.cloudflareinsights.com/beacon.min.js';
+  s.defer = true;
+  s.setAttribute('data-cf-beacon', JSON.stringify({ token: token }));
+  document.head.appendChild(s);
 })();
 
 /* ── botão de envio do formulário ──

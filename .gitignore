@@ -9,6 +9,9 @@ node_modules/
 # Fotos enviadas localmente pela área ADM (em produção ficam no Supabase)
 uploads/
 
+# Segredo local da senha do ADM (dev). Em produção fica no bucket R2, cifrado.
+.admin-secret.json
+
 # Sistema operacional
 .DS_Store
 Thumbs.db

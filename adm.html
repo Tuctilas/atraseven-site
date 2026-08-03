@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
 <title>Área ADM · ATRA SEVEN</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
@@ -146,6 +147,31 @@
     <h2>Fotos por serviço</h2>
     <div class="sub">Cada serviço aceita até 2 fotos. Elas aparecem ao clicar no card do serviço no site.</div>
     <div id="svc-services"></div>
+  </div>
+
+  <!-- Segurança: trocar a senha de acesso -->
+  <div class="card">
+    <h2>Segurança</h2>
+    <div class="sub">Altere a senha de acesso a esta área. É preciso informar a senha atual.</div>
+    <div class="grid2">
+      <div>
+        <label for="pw-current">Senha atual</label>
+        <input type="password" id="pw-current" autocomplete="current-password" placeholder="••••••••">
+      </div>
+      <div></div>
+    </div>
+    <div class="grid2">
+      <div>
+        <label for="pw-new">Nova senha</label>
+        <input type="password" id="pw-new" autocomplete="new-password" placeholder="mínimo 10 caracteres">
+      </div>
+      <div>
+        <label for="pw-confirm">Confirmar nova senha</label>
+        <input type="password" id="pw-confirm" autocomplete="new-password" placeholder="repita a nova senha">
+      </div>
+    </div>
+    <button class="btn btn-sm" id="btn-change-pw" type="button" style="width:auto;">Alterar senha</button>
+    <div class="msg" id="pw-msg"></div>
   </div>
 </div>
 

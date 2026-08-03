@@ -18,6 +18,7 @@ const FILES = [
   "index.html",
   "adm.html",
   "privacidade.html",
+  "favicon.svg",
   "_redirects",
   "_headers",
   "robots.txt",

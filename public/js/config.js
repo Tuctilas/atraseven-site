@@ -14,4 +14,10 @@
   // aqui: vai em TURNSTILE_SECRET no Render. Enquanto vazio, o widget não
   // é renderizado e o formulário funciona sem verificação.
   window.ATRA_TURNSTILE_SITEKEY = '0x4AAAAAAEEoW9CwqX240D1R';
+
+  // Token do Cloudflare Web Analytics (medição de acessos, sem cookies).
+  // É PÚBLICO. Pegue em: Cloudflare → Analytics & Logs → Web Analytics →
+  // "Add a site" (atraseven.com.br) → copie o token do snippet. Enquanto
+  // vazio, nenhum script de medição é carregado (ver js/main.js).
+  window.ATRA_CF_ANALYTICS_TOKEN = '';
 })();

@@ -13,6 +13,19 @@
   const BASE = 0.40;                  // opacidade global do fundo
   const reduce = window.matchMedia("(prefers-reduced-motion:reduce)").matches;
 
+  /* PC fraco: poucos núcleos ou pouca RAM. Nesses aparelhos o fundo é o
+     principal vilão de fluidez, então baixamos o dpr para 1 e desligamos o
+     giro perpétuo (ver frame()). A animação de montagem na rolagem continua,
+     só não fica repintando parado no rodapé. */
+  const lowPower =
+    (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4) ||
+    (navigator.deviceMemory && navigator.deviceMemory <= 4) || false;
+
+  // Toque (celular/tablet): a barra de URL aparecendo/sumindo dispara resize
+  // só em ALTURA. Reagir a isso reflui o canvas e faz o fundo "pular"/expandir
+  // durante a rolagem — por isso só reagimos à mudança de LARGURA.
+  const isTouch = window.matchMedia("(pointer: coarse)").matches;
+
   /* Cache de gradientes.
      createLinearGradient/createRadialGradient alocam objeto novo a cada
      chamada, e o desenho fazia ~10 por quadro (uma por engrenagem, eixo,
@@ -26,21 +39,32 @@
     return g;
   }
 
-  let w = 0, h = 0, dpr = 1;
+  let w = 0, h = 0, dpr = 1, lastW = 0;
   function resize() {
     /* Teto de 1.5 em vez de 2: em tela 1920x1080 com dpr 2 o canvas teria
        8,3 megapixels para limpar e repintar a cada quadro. Como o fundo é
        decorativo e de baixa opacidade, 1.5 é indistinguível a olho e corta
-       ~45% dos pixels. */
-    dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+       ~45% dos pixels. Em PC fraco descemos para 1 (menos ~55% ainda). */
+    dpr = Math.min(window.devicePixelRatio || 1, lowPower ? 1 : 1.5);
     w = window.innerWidth; h = window.innerHeight;
+    lastW = w;
     canvas.width = w * dpr; canvas.height = h * dpr;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     grads.clear();       // a geometria mudou; os gradientes velhos não servem
     medirContato();
     precisaDesenhar = true;
   }
-  window.addEventListener("resize", resize);
+
+  // No toque, ignora resize que só mexe na altura (barra de URL). Em ambos os
+  // casos, debounce para não reflui o canvas dezenas de vezes durante um
+  // arraste de redimensionamento.
+  let resizeTimer = null;
+  function onResize() {
+    if (isTouch && window.innerWidth === lastW) return;
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(resize, 150);
+  }
+  window.addEventListener("resize", onResize);
 
   /* progresso: 0 no topo; 1 quando a seção de contato entra em cena.
      Assim o redutor já está montado/girando em "Vamos Trabalhar Juntos" e
@@ -258,7 +282,7 @@
     // giro: acompanha a montagem e ganha giro contínuo (idle) ao se completar
     const now = performance.now();
     const dt = Math.min((now - lastT) / 1000, 0.05); lastT = now;
-    if (!reduce) spinAccum += dt * 1.1 * settle;
+    if (!reduce && !lowPower) spinAccum += dt * 1.1 * settle;
     const angP = conv * 5 + spinAccum;
     const angM = -angP * (Rp / RmL);
     const angC = angP * (Rp / RmL) * (RmS / Rc);
@@ -368,7 +392,7 @@
        idêntico ao anterior — antes ele era repintado assim mesmo, 60
        vezes por segundo, competindo com a rolagem pela CPU. */
     const rolando = Math.abs(target - disp) > 0.0004 || Math.abs(disp - antes) > 0.0004;
-    const girando = !reduce && disp > 0.85;
+    const girando = !reduce && !lowPower && disp > 0.85;
     if (!rolando && !girando && !precisaDesenhar) { lastT = performance.now(); return; }
     precisaDesenhar = false;
 

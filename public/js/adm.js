@@ -68,6 +68,7 @@
   function wireDash() {
     $("btn-logout").onclick = () => { clearToken(); location.reload(); };
     $("btn-save").onclick = doSave;
+    $("btn-change-pw").onclick = doChangePassword;
     $("add-pres").onclick = () => { uploadCtx = { type: "pres" }; fileInput.click(); };
     fileInput.onchange = async () => {
       const files = [...fileInput.files]; fileInput.value = "";
@@ -242,6 +243,38 @@
       setMsg(saveMsg, "Salvo! As mudanças já estão no site.", "ok");
     } catch (e) {
       setMsg(saveMsg, e.message, "err");
+    } finally { btn.disabled = false; }
+  }
+
+  /* ════════ TROCAR SENHA ════════ */
+  async function doChangePassword() {
+    const cur = $("pw-current").value;
+    const next = $("pw-new").value;
+    const conf = $("pw-confirm").value;
+    const msg = $("pw-msg");
+    if (!cur || !next) return setMsg(msg, "Preencha a senha atual e a nova.", "err");
+    if (next.length < 10) return setMsg(msg, "A nova senha precisa ter ao menos 10 caracteres.", "err");
+    if (next !== conf) return setMsg(msg, "A confirmação não confere com a nova senha.", "err");
+
+    const btn = $("btn-change-pw"); btn.disabled = true; setMsg(msg, "Alterando...", "");
+    try {
+      const r = await fetch(API + "/api/admin/password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: "Bearer " + getToken() },
+        body: JSON.stringify({ currentPassword: cur, newPassword: next }),
+      });
+      const d = await r.json().catch(() => ({}));
+      if (r.status === 401) {
+        // 401 pode ser senha atual errada OU sessão expirada. A API marca a
+        // senha errada com "atual" na mensagem; o resto é sessão expirada.
+        if (/atual/i.test(d.error || "")) return setMsg(msg, d.error, "err");
+        return onAuthFail();
+      }
+      if (!r.ok) throw new Error(d.error || "Falha ao alterar a senha.");
+      $("pw-current").value = ""; $("pw-new").value = ""; $("pw-confirm").value = "";
+      setMsg(msg, "Senha alterada com sucesso.", "ok");
+    } catch (e) {
+      setMsg(msg, e.message, "err");
     } finally { btn.disabled = false; }
   }
 })();

@@ -21,7 +21,20 @@
 <meta name="twitter:card" content="summary">
 
 <meta name="theme-color" content="#168a63">
+
+<!-- Ícone da aba do navegador e do resultado de busca do Google. Antes não
+     havia favicon nenhum, então a aba e o link no Google saíam sem marca. -->
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="favicon.svg">
+
+<!-- Robots explícito: libera a indexação e o Google seguir os links. -->
+<meta name="robots" content="index, follow, max-image-preview:large">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Preconnect à API: adianta o DNS/TLS para o Render, encurtando um pouco a
+     espera das fotos (o grosso da demora é o Render "acordar" do plano free). -->
+<link rel="preconnect" href="https://atra-seven-api.onrender.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600&family=Barlow+Condensed:wght@300;400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
 
@@ -47,6 +60,8 @@
   },
   "legalName": "ATRA SEVEN Assistência Técnica em Redutores e Acoplamentos",
   "url": "https://www.atraseven.com.br/",
+  "logo": "https://www.atraseven.com.br/favicon.svg",
+  "image": "https://www.atraseven.com.br/favicon.svg",
   "foundingDate": "2014",
   "description": "Assistência técnica especializada em redutores e acoplamentos industriais, com atendimento in loco ou em oficina externa.",
   "email": "vendas@atraseven.com.br",
@@ -67,10 +82,25 @@
 }
 </script>
 
+<!-- WebSite: dá ao Google o nome oficial do site, para que o resultado de
+     busca mostre "ATRA SEVEN" (e não uma versão em minúsculas deduzida da URL). -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "ATRA SEVEN",
+  "alternateName": "ATRA SEVEN Assistência Técnica",
+  "url": "https://www.atraseven.com.br/"
+}
+</script>
+
 </head>
 <body>
 
 <canvas id="redutor-bg"></canvas>
+<!-- Véu de vidro fosco: fica ENTRE o redutor de fundo e o conteúdo, deixando a
+     animação suave e fora de foco para não roubar a atenção do visitante. -->
+<div id="bg-veil"></div>
 
 <nav>
   <a class="nav-logo" href="#">
@@ -147,11 +177,25 @@
       <a class="btn-ghost" href="#servicos">Ver Serviços</a>
     </div>
 
+    <!-- Destaques rápidos: dão substância à primeira tela sem competir com o
+         título. Ocultos no celular (a dobra ali é curta e disputada). -->
+    <ul class="hero-highlights">
+      <li>Atendimento in loco &amp; oficina externa</li>
+      <li>Resposta no mesmo dia</li>
+      <li>+10 anos no mercado</li>
+    </ul>
+
     <div class="avail-badge">
       <span class="avail-dot"></span>
       Emergências e paradas programadas
     </div>
   </div>
+
+  <!-- Chamada de rolagem: convida o visitante a descer para o conteúdo. -->
+  <a class="hero-scroll" href="#sobre" aria-label="Rolar para conhecer a empresa">
+    <span class="hero-scroll-label">Conheça a empresa</span>
+    <span class="hero-scroll-arrow" aria-hidden="true"></span>
+  </a>
 </section>
 
 <!-- Faixa ESTÁTICA. Antes deslizava em loop, e por isso a lista aparecia
@@ -415,6 +459,9 @@
   <div class="footer-right">
     <span class="footer-copy">© 2026 ATRA SEVEN · Todos os direitos reservados</span>
     <a class="footer-dev" href="https://www.linkedin.com/in/gustavo-maced/" target="_blank" rel="noopener">Desenvolvido por Gustavo Macedo</a>
+    <!-- Acesso à área administrativa. Substitui o antigo gesto de 3 cliques no
+         logo. Discreto e com rel=nofollow (a adm.html já é noindex). -->
+    <a class="footer-adm" href="adm.html" rel="nofollow">Área administrativa</a>
   </div>
 </footer>
 

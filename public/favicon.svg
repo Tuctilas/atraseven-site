@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" role="img" aria-label="ATRA SEVEN">
+  <!-- Ícone da aba e do resultado do Google. Engrenagem branca da marca sobre
+       o verde ATRA SEVEN, num quadrado arredondado que lê bem já a 16px. -->
+  <rect width="40" height="40" rx="9" fill="#168a63"/>
+  <g transform="translate(20 20) scale(0.8) translate(-20 -20)" fill="#ffffff">
+    <path d="M20 12a8 8 0 100 16 8 8 0 000-16zm0 12a4 4 0 110-8 4 4 0 010 8z"/>
+    <path d="M18 4h4v4h-4zM18 32h4v4h-4zM4 18v4h4v-4zM32 18v4h4v-4z
+             M7.05 9.88l2.83-2.83 2.83 2.83-2.83 2.83z
+             M27.3 30.12l2.82-2.83 2.83 2.83-2.83 2.82z
+             M7.05 30.12l2.83-2.83 2.83 2.83-2.83 2.82z
+             M27.3 9.88l2.82 2.83-2.83 2.83-2.82-2.83z"/>
+  </g>
+</svg>

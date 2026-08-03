@@ -88,7 +88,23 @@ body::before {
   height: 100vh;
   z-index: 0;
   pointer-events: none;
-  opacity: 0.9;
+  /* Mais apagado e levemente desfocado: vira textura de fundo, não figura
+     principal. O blur é só no desktop (ver media query) — no celular sai,
+     para não pesar. */
+  opacity: 0.5;
+  filter: blur(1.6px);
+}
+
+/* Véu de vidro fosco por cima do redutor e por baixo do conteúdo. É uma
+   camada branca translúcida SIMPLES (sem backdrop-filter), de propósito:
+   custa quase nada e ainda assim tira o fundo do foco, ao contrário de um
+   blur de tela cheia, que castiga PCs fracos. */
+#bg-veil {
+  position: fixed;
+  inset: 0;
+  z-index: 0;                 /* mesmo nível do canvas, mas depois no DOM = por cima */
+  pointer-events: none;
+  background: rgba(255,255,255,0.42);
 }
 
 /* ── ANIMATIONS ── */
@@ -99,8 +115,11 @@ body::before {
 @keyframes orbFloat    { from { transform: translate(0,0) scale(1); } to { transform: translate(30px,-30px) scale(1.05); } }
 @keyframes pulse       { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
 
-.gear-spin     { animation: gearSpin    4s linear infinite; transform-origin: 50% 50%; }
-.gear-spin-rev { animation: gearSpinRev 3s linear infinite; transform-origin: 50% 50%; }
+/* Engrenagens ESTÁTICAS. O giro contínuo (nav e título) foi removido a
+   pedido: distraía e pesava. As classes seguem existindo para o desenho,
+   mas sem animação. Os @keyframes acima ficam para uso eventual. */
+.gear-spin     { transform-origin: 50% 50%; }
+.gear-spin-rev { transform-origin: 50% 50%; }
 
 /* ── NAV ── */
 nav {
@@ -278,8 +297,9 @@ nav {
   flex-shrink: 0;
   filter: drop-shadow(0 0 18px rgba(92,205,167,0.35));
 }
-.hero-gear-svg .g-main  { animation: gearSpin    6s   linear infinite; transform-origin: 50% 50%; }
-.hero-gear-svg .g-small { animation: gearSpinRev 3.5s linear infinite; transform-origin: 72px 28px; }
+/* Engrenagem do título ESTÁTICA (giro removido a pedido). */
+.hero-gear-svg .g-main  { transform-origin: 50% 50%; }
+.hero-gear-svg .g-small { transform-origin: 72px 28px; }
 
 .hero-sub {
   font-size: 1.1rem;
@@ -298,6 +318,72 @@ nav {
   gap: 1.5rem;
   align-items: center;
   animation: fadeUp 1.2s 0.35s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+/* ── HERO: destaques + chamada de rolagem ── */
+.hero-highlights {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem 1.6rem;
+  margin-top: 1.75rem;
+  animation: fadeUp 1.2s 0.45s cubic-bezier(0.16,1,0.3,1) both;
+}
+.hero-highlights li {
+  position: relative;
+  padding-left: 1.1rem;
+  font-family: var(--font-cond);
+  font-size: 0.9rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+.hero-highlights li::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 50%;
+  width: 6px; height: 6px;
+  margin-top: -3px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.hero-scroll {
+  position: absolute;
+  left: 50%;
+  bottom: 1.4rem;
+  transform: translateX(-50%);
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  color: var(--muted);
+  animation: fadeUp 1.2s 0.6s cubic-bezier(0.16,1,0.3,1) both;
+}
+.hero-scroll-label {
+  font-family: var(--font-cond);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+.hero-scroll-arrow {
+  width: 10px; height: 10px;
+  border-right: 2px solid var(--accent);
+  border-bottom: 2px solid var(--accent);
+  transform: rotate(45deg);
+  animation: scrollBounce 1.8s ease-in-out infinite;
+}
+.hero-scroll:hover { color: var(--text); }
+@keyframes scrollBounce {
+  0%, 100% { transform: rotate(45deg) translateY(0);   opacity: 0.5; }
+  50%      { transform: rotate(45deg) translateY(4px);  opacity: 1; }
+}
+/* Sem movimento para quem pede menos animação. */
+@media (prefers-reduced-motion: reduce) {
+  .hero-scroll-arrow { animation: none; }
 }
 
 /* ── BUTTONS ── */
@@ -508,6 +594,8 @@ footer { border-top:1px solid var(--border); padding:3rem; display:flex; align-i
 .footer-right { display:flex; flex-direction:column; align-items:flex-end; gap:0.35rem; }
 .footer-dev { font-family:var(--font-cond); font-size:0.72rem; color:rgba(136,136,136,0.35); letter-spacing:0.06em; text-decoration:none; transition:color 0.2s; }
 .footer-dev:hover { color:var(--accent); }
+.footer-adm { font-family:var(--font-cond); font-size:0.7rem; text-transform:uppercase; color:rgba(136,136,136,0.3); letter-spacing:0.08em; text-decoration:none; transition:color 0.2s; }
+.footer-adm:hover { color:var(--accent); }
 
 .whatsapp-float { position:fixed; bottom:2rem; right:2rem; z-index:300; width:56px; height:56px; background:#25d366; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; box-shadow:0 4px 20px rgba(37,211,102,0.35); transition:transform 0.2s, box-shadow 0.2s; }
 .whatsapp-float:hover { transform:scale(1.1); box-shadow:0 6px 28px rgba(37,211,102,0.55); }
@@ -602,8 +690,15 @@ footer { border-top:1px solid var(--border); padding:3rem; display:flex; align-i
   .hero { padding: calc(var(--nav-h) + 0.5rem) 1.5rem 2.5rem; }
   .hero-sub { margin-bottom: 1.75rem; }
   .hero-actions { gap: 0.9rem; }
-  /* fundo de engrenagens bem mais suave no celular, p/ não competir com o texto */
-  #redutor-bg { opacity: 0.28; }
+  /* No celular a primeira tela é curta e disputada (ver comentários acima):
+     destaques e chamada de rolagem sairiam empurrando o nome da empresa
+     para trás da barra. Ficam só no desktop. */
+  .hero-highlights, .hero-scroll { display: none; }
+  /* fundo de engrenagens bem mais suave no celular, p/ não competir com o
+     texto. Sem blur aqui: no celular o custo do desfoque de tela cheia não
+     compensa, e a opacidade baixa já cumpre o papel. */
+  #redutor-bg { opacity: 0.22; filter: none; }
+  #bg-veil { background: rgba(255,255,255,0.5); }
   .about, .contact { grid-template-columns: 1fr; gap: 3rem; }
   .services-grid { grid-template-columns: 1fr; }
   .diff-grid { grid-template-columns: 1fr 1fr; }
