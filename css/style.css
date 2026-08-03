@@ -88,23 +88,23 @@ body::before {
   height: 100vh;
   z-index: 0;
   pointer-events: none;
-  /* Mais apagado e levemente desfocado: vira textura de fundo, não figura
-     principal. O blur é só no desktop (ver media query) — no celular sai,
-     para não pesar. */
-  opacity: 0.5;
-  filter: blur(1.6px);
+  /* Mais apagado: vira textura de fundo, não figura principal. NÃO usar
+     filter: blur() aqui — o canvas repinta a cada quadro na rolagem, e um
+     desfoque de tela cheia sobre uma camada que muda todo frame trava a
+     página inteira (foi o que deixou o site lento). O "fora de foco" fica
+     por conta do véu abaixo, que é estático e praticamente de graça. */
+  opacity: 0.4;
 }
 
-/* Véu de vidro fosco por cima do redutor e por baixo do conteúdo. É uma
-   camada branca translúcida SIMPLES (sem backdrop-filter), de propósito:
-   custa quase nada e ainda assim tira o fundo do foco, ao contrário de um
-   blur de tela cheia, que castiga PCs fracos. */
+/* Véu por cima do redutor e por baixo do conteúdo. Camada branca translúcida
+   SIMPLES (sem filtro nenhum), de propósito: custa quase nada e ainda assim
+   apaga o fundo, tirando-o do foco — sem o custo de um blur de tela cheia. */
 #bg-veil {
   position: fixed;
   inset: 0;
   z-index: 0;                 /* mesmo nível do canvas, mas depois no DOM = por cima */
   pointer-events: none;
-  background: rgba(255,255,255,0.42);
+  background: rgba(255,255,255,0.55);
 }
 
 /* ── ANIMATIONS ── */
@@ -694,11 +694,9 @@ footer { border-top:1px solid var(--border); padding:3rem; display:flex; align-i
      destaques e chamada de rolagem sairiam empurrando o nome da empresa
      para trás da barra. Ficam só no desktop. */
   .hero-highlights, .hero-scroll { display: none; }
-  /* fundo de engrenagens bem mais suave no celular, p/ não competir com o
-     texto. Sem blur aqui: no celular o custo do desfoque de tela cheia não
-     compensa, e a opacidade baixa já cumpre o papel. */
-  #redutor-bg { opacity: 0.22; filter: none; }
-  #bg-veil { background: rgba(255,255,255,0.5); }
+  /* fundo de engrenagens bem mais suave no celular, p/ não competir com o texto */
+  #redutor-bg { opacity: 0.2; }
+  #bg-veil { background: rgba(255,255,255,0.6); }
   .about, .contact { grid-template-columns: 1fr; gap: 3rem; }
   .services-grid { grid-template-columns: 1fr; }
   .diff-grid { grid-template-columns: 1fr 1fr; }
