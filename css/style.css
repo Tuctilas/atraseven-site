@@ -298,11 +298,8 @@ nav {
   background: radial-gradient(closest-side, var(--accent2) 0%, var(--accent2) 45%, transparent 100%);
 }
 
-/* --hero-x: deslocamento horizontal do conteúdo do hero. Começa à direita e o
-   js/main.js zera conforme a página rola (centraliza). O transform aqui é do
-   PAI; as animações de entrada (fadeUp) são dos filhos, então não conflitam.
-   O valor inicial (6vw) evita "pulo" antes do JS rodar. */
-.hero-content { position: relative; z-index: 2; max-width: 960px; transform: translateX(var(--hero-x, 6vw)); will-change: transform; }
+/* Conteúdo do hero: PARADO e centralizado (o movimento é só do fundo/redutor). */
+.hero-content { position: relative; z-index: 2; max-width: 960px; margin: 0 auto; text-align: center; }
 
 .hero-eyebrow {
   font-family: var(--font-cond);
@@ -314,6 +311,7 @@ nav {
   margin-bottom: 1.5rem;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 1rem;
 }
 .hero-eyebrow::before { content:''; display:block; width:40px; height:1px; background:var(--accent); }
@@ -321,6 +319,7 @@ nav {
 .hero-title-block {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 1.5rem;
   margin-bottom: 2rem;
   flex-wrap: wrap;
@@ -350,6 +349,8 @@ nav {
   font-weight: 300;
   color: var(--muted);
   max-width: 520px;
+  margin-left: auto;
+  margin-right: auto;
   line-height: 1.7;
   margin-bottom: 3rem;
   animation: fadeUp 1.2s 0.2s cubic-bezier(0.16,1,0.3,1) both;
@@ -361,6 +362,7 @@ nav {
   flex-wrap: wrap;
   gap: 1.5rem;
   align-items: center;
+  justify-content: center;
   animation: fadeUp 1.2s 0.35s cubic-bezier(0.16,1,0.3,1) both;
 }
 
@@ -369,6 +371,7 @@ nav {
   list-style: none;
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: 0.6rem 1.6rem;
   margin-top: 1.75rem;
   animation: fadeUp 1.2s 0.45s cubic-bezier(0.16,1,0.3,1) both;

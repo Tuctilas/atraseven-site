@@ -151,31 +151,3 @@ async function submitForm() {
   const btn = document.getElementById('f-submit');
   if (btn) btn.addEventListener('click', submitForm);
 })();
-
-/* ── Hero: conteúdo começa à direita e centraliza ao rolar ──
-   Atualiza a variável --hero-x no conteúdo do hero conforme a rolagem (o CSS
-   aplica o translateX). O fundo (canvas) tem o próprio deslocamento em
-   js/redutor-bg.js. Throttle com requestAnimationFrame para não pesar. */
-(function () {
-  const content = document.querySelector('.hero-content');
-  const hero = document.querySelector('.hero');
-  if (!content || !hero) return;
-  const reduce = window.matchMedia('(prefers-reduced-motion:reduce)').matches;
-  let ticking = false;
-  function update() {
-    ticking = false;
-    // No celular a dobra é curta e disputada — sem deslocamento (evita corte).
-    if (reduce || window.innerWidth <= 900) {
-      content.style.setProperty('--hero-x', '0px');
-      return;
-    }
-    const h = hero.offsetHeight || window.innerHeight;
-    const p = Math.min(Math.max(window.scrollY / (h * 0.7), 0), 1); // 0 no topo → 1 após ~70% do hero
-    const shift = Math.min(window.innerWidth * 0.07, 110);          // deslocamento à direita no topo
-    content.style.setProperty('--hero-x', (shift * (1 - p)).toFixed(1) + 'px');
-  }
-  function onScroll() { if (!ticking) { ticking = true; requestAnimationFrame(update); } }
-  window.addEventListener('scroll', onScroll, { passive: true });
-  window.addEventListener('resize', onScroll, { passive: true });
-  update();
-})();
