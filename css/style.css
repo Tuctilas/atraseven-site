@@ -258,7 +258,7 @@ nav {
   /* O padding-top reserva a barra fixa. Como o conteúdo é ancorado ao
      rodapé (flex-end), sem essa reserva ele sobe por baixo do nav sempre
      que a tela é curta demais para tudo. */
-  padding: calc(var(--nav-h) + 1rem) var(--gutter) 5rem;
+  padding: calc(var(--nav-h) + 1rem) var(--gutter) 2rem;
   position: relative;
   overflow: hidden;
   z-index: 1;
@@ -302,6 +302,23 @@ nav {
    max-width maior para o nome ATRA SEVEN crescer até mais perto das laterais
    sem quebrar em duas linhas. */
 .hero-content { position: relative; z-index: 2; max-width: 1200px; margin: 0 auto; text-align: center; }
+/* Clarão suave ATRÁS do texto: apaga as engrenagens do fundo só na área do
+   conteúdo, dando foco às escritas. Fica entre o fundo (canvas/véu, z-index 0)
+   e o texto (que tem z-index acima). Bordas 100% transparentes → sem "oval"
+   visível, só uma clareada. */
+.hero-content::before {
+  content: '';
+  position: absolute;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  width: 118%; height: 128%;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center,
+    rgba(255,255,255,0.92) 0%,
+    rgba(255,255,255,0.7) 38%,
+    rgba(255,255,255,0) 72%);
+}
 
 .hero-eyebrow {
   font-family: var(--font-cond);
@@ -335,9 +352,10 @@ nav {
   line-height: 0.9;
   letter-spacing: 0.02em;
   color: var(--text);
-  /* Halo branco: destaca o nome e o separa das engrenagens do fundo, que antes
-     apareciam por trás das letras e "sujavam" a leitura. */
-  text-shadow: 0 2px 24px rgba(255,255,255,0.92), 0 0 3px rgba(255,255,255,0.95);
+  /* Sombra mínima e NÍTIDA (sem borrão): o clareamento do fundo atrás do texto
+     fica por conta de .hero-content::before, então as letras não precisam de
+     halo borrado — que era o que deixava as escritas "sem foco". */
+  text-shadow: 0 1px 1px rgba(255,255,255,0.5);
 }
 .hero-title .accent { color: var(--accent); }
 
