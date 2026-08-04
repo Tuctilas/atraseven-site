@@ -377,7 +377,9 @@ nav {
   margin-left: auto;
   margin-right: auto;
   line-height: 1.7;
-  margin-bottom: 3rem;
+  /* Encurtado (3rem → 2rem): como o conteúdo é ancorado embaixo, reduzir um
+     espaço interno faz o título descer um pouco, sem mexer na chamada de baixo. */
+  margin-bottom: 2rem;
   animation: fadeUp 1.2s 0.2s cubic-bezier(0.16,1,0.3,1) both;
 }
 .hero-actions {
@@ -425,6 +427,7 @@ nav {
      cair por cima do "Emergências e paradas programadas" — era o que estava
      embolando as descrições no rodapé do hero. */
   align-self: center;
+  position: relative;
   margin-top: 2.2rem;
   z-index: 2;
   display: flex;
@@ -435,23 +438,26 @@ nav {
   color: var(--muted);
   animation: fadeUp 1.2s 0.6s cubic-bezier(0.16,1,0.3,1) both;
 }
-/* Trilho com um segmento verde que "desce" em loop: o principal atrator de
-   atenção para rolar. Um elemento só (::before) — sem custo relevante. */
-.hero-scroll::before {
+/* Anel que pulsa ATRÁS do ícone (tipo "olhe aqui"): atrator de atenção bem
+   mais forte que a linha fininha anterior. Fica sobre o ícone (no rodapé da
+   chamada), parado, enquanto o ícone pula por dentro. */
+.hero-scroll::after {
   content: '';
-  width: 2px;
-  height: 46px;
-  border-radius: 2px;
-  background-color: rgba(22,138,99,0.16);
-  background-image: linear-gradient(var(--accent), var(--accent));
-  background-repeat: no-repeat;
-  background-size: 2px 15px;
-  background-position: 0 -16px;
-  animation: scrollTrail 1.8s cubic-bezier(0.45,0,0.55,1) infinite;
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 52px;
+  height: 52px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  z-index: -1;
+  pointer-events: none;
+  animation: scrollPulse 1.8s ease-out infinite;
 }
-@keyframes scrollTrail {
-  0%, 10%   { background-position: 0 -16px; }
-  70%, 100% { background-position: 0 48px; }
+@keyframes scrollPulse {
+  0%   { box-shadow: 0 0 0 0 rgba(22,138,99,0.45); }
+  70%  { box-shadow: 0 0 0 20px rgba(22,138,99,0); }
+  100% { box-shadow: 0 0 0 0 rgba(22,138,99,0); }
 }
 .hero-scroll-label {
   font-family: var(--font-cond);
@@ -464,24 +470,26 @@ nav {
 .hero-scroll:hover { color: var(--text); }
 .hero-scroll:hover .hero-scroll-label { color: var(--text); }
 
-/* Ícone da chamada de rolagem: engrenagem da marca com uma seta para baixo.
-   Uma animação leve (só transform/opacity, num ícone de 40px → praticamente de
-   graça pra GPU): o conjunto balança de leve para baixo, convidando a descer.
+/* Ícone da chamada de rolagem: engrenagem da marca com seta para baixo. Maior
+   (52px) e com um PULO firme (desce rápido e pausa) para chamar atenção. Junto
+   com o anel pulsante (::after), vira um atrator claro de "role para baixo".
    A engrenagem NÃO gira. */
 .hero-scroll-icon {
-  width: 40px;
-  height: 40px;
+  width: 52px;
+  height: 52px;
   color: var(--accent);
-  animation: scrollNudge 1.9s ease-in-out infinite;
+  animation: scrollNudge 1.4s cubic-bezier(0.5,0,0.5,1) infinite;
 }
 @keyframes scrollNudge {
-  0%, 100% { transform: translateY(0);   opacity: 0.72; }
-  50%      { transform: translateY(5px); opacity: 1; }
+  0%   { transform: translateY(0); }
+  25%  { transform: translateY(9px); }
+  50%  { transform: translateY(0); }
+  100% { transform: translateY(0); }
 }
 /* Sem movimento para quem pede menos animação. */
 @media (prefers-reduced-motion: reduce) {
   .hero-scroll-icon,
-  .hero-scroll::before { animation: none; }
+  .hero-scroll::after { animation: none; }
 }
 
 /* ── BUTTONS ── */
