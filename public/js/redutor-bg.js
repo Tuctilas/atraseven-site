@@ -289,9 +289,14 @@
 
     const aMain = BASE * (0.78 + 0.22 * conv);
 
+    // Começa deslocado à DIREITA no topo e vai para o CENTRO conforme rola
+    // (mesma ideia do conteúdo do hero). smooth() leva o deslocamento de 1→0
+    // ao longo dos primeiros 35% do progresso.
+    const xShift = Math.min(w * 0.14, 200) * (1 - smooth(0, 0.35, p));
+
     ctx.save();
     ctx.globalAlpha = 1;
-    ctx.translate(w / 2, h / 2);     // centralizado, SEM rotação de grupo (não orbita)
+    ctx.translate(w / 2 + xShift, h / 2);   // desloca à direita no topo; centraliza ao rolar
     ctx.translate(-trainCenterX, 0);
 
     /* 1. CARCAÇA (espalhada embaixo -> sobe ao centro) */

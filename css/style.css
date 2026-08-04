@@ -40,7 +40,16 @@
      espaço no fluxo: sem reservar este valor no padding-top do hero, o
      conteúdo passa por baixo dela e o topo do "ATRA" fica cortado. */
   --nav-h: 70px;
+
+  /* Largura máxima do conteúdo. Em telas largas, o recuo lateral cresce para
+     manter tudo num "container" centralizado, em vez de esparramar de ponta a
+     ponta. Aplicado via padding com max() em nav/hero/section/footer, então as
+     divisórias de borda continuam ocupando a largura total da tela. */
+  --content-max: 1300px;
 }
+/* Recuo lateral reutilizado: 3rem no normal; em telas > (1300px + 6rem) ele
+   cresce e centraliza o conteúdo. */
+:root { --gutter: max(3rem, calc((100% - var(--content-max)) / 2)); }
 
 @media (max-width: 1240px) { :root { --ticker-h: 69px; } }  /* 2 linhas */
 
@@ -129,7 +138,7 @@ nav {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1.1rem 3rem;
+  padding: 1.1rem var(--gutter);
   border-bottom: 1px solid var(--border);
   /* Sem backdrop-filter: a barra é fixa, então o desfoque teria de ser
      refeito sobre tudo que passa por baixo a cada quadro de rolagem. Um
@@ -249,7 +258,7 @@ nav {
   /* O padding-top reserva a barra fixa. Como o conteúdo é ancorado ao
      rodapé (flex-end), sem essa reserva ele sobe por baixo do nav sempre
      que a tela é curta demais para tudo. */
-  padding: calc(var(--nav-h) + 1rem) 3rem 5rem;
+  padding: calc(var(--nav-h) + 1rem) var(--gutter) 5rem;
   position: relative;
   overflow: hidden;
   z-index: 1;
@@ -289,7 +298,11 @@ nav {
   background: radial-gradient(closest-side, var(--accent2) 0%, var(--accent2) 45%, transparent 100%);
 }
 
-.hero-content { position: relative; z-index: 2; max-width: 960px; }
+/* --hero-x: deslocamento horizontal do conteúdo do hero. Começa à direita e o
+   js/main.js zera conforme a página rola (centraliza). O transform aqui é do
+   PAI; as animações de entrada (fadeUp) são dos filhos, então não conflitam.
+   O valor inicial (6vw) evita "pulo" antes do JS rodar. */
+.hero-content { position: relative; z-index: 2; max-width: 960px; transform: translateX(var(--hero-x, 6vw)); will-change: transform; }
 
 .hero-eyebrow {
   font-family: var(--font-cond);
@@ -514,7 +527,7 @@ nav {
 }
 
 /* ── SECTIONS ── */
-section { padding: 7rem 3rem; position: relative; z-index: 1; scroll-margin-top: 80px; }
+section { padding: 7rem var(--gutter); position: relative; z-index: 1; scroll-margin-top: 80px; }
 html { scroll-behavior: smooth; }
 
 .section-label {
@@ -580,12 +593,12 @@ html { scroll-behavior: smooth; }
 /* ── INDUSTRIES ── */
 .industries { border-top: 1px solid var(--border); }
 .industries-list { display:flex; flex-direction:column; border-top:1px solid var(--border); margin-top:3rem; }
-.industry-item { display:flex; align-items:center; justify-content:space-between; padding:1.8rem 0; border-bottom:1px solid var(--border); cursor:pointer; transition:padding-left 0.3s; text-decoration:none; color:inherit; }
-.industry-item:hover { padding-left: 1rem; }
-.industry-name { font-family:var(--font-cond); font-size:1.5rem; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; transition:color 0.2s; }
-.industry-item:hover .industry-name { color: var(--accent); }
-.industry-arrow { font-size:1.2rem; color:var(--muted); transition:transform 0.3s, color 0.2s; }
-.industry-item:hover .industry-arrow { transform:translateX(8px); color:var(--accent); }
+/* Lista de setores ESTÁTICA. Antes tinha seta "→", cursor de mão e efeitos de
+   hover (deslizava e mudava de cor) que faziam a lista PARECER que abriria um
+   link/página. Removidos — agora é só uma lista de setores, parada. */
+.industry-item { display:flex; align-items:center; justify-content:space-between; padding:1.8rem 0; border-bottom:1px solid var(--border); cursor:default; text-decoration:none; color:inherit; }
+.industry-name { font-family:var(--font-cond); font-size:1.5rem; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; }
+.industry-arrow { display: none; }
 
 /* ── MISSION ── */
 .mission { border-top:1px solid var(--border); background:var(--surface); text-align:center; position:relative; overflow:hidden; }
@@ -643,7 +656,7 @@ html { scroll-behavior: smooth; }
 .form-row { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
 
 /* ── FOOTER ── */
-footer { border-top:1px solid var(--border); padding:3rem; display:flex; align-items:center; justify-content:space-between; position:relative; z-index:1; }
+footer { border-top:1px solid var(--border); padding:3rem var(--gutter); display:flex; align-items:center; justify-content:space-between; position:relative; z-index:1; }
 .footer-logo { font-family:var(--font-display); font-size:1.4rem; letter-spacing:0.15em; color:var(--text); }
 .footer-logo span { color: var(--accent); }
 .footer-links { display:flex; gap:2rem; list-style:none; }
