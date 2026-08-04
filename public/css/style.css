@@ -323,7 +323,7 @@ nav {
   gap: 1.5rem;
   margin-bottom: 2rem;
   flex-wrap: wrap;
-  animation: fadeUp 1.2s cubic-bezier(0.16,1,0.3,1) both;
+  /* Sem animação de entrada: o título fica PARADO (a pedido). */
 }
 .hero-title {
   font-family: var(--font-display);
@@ -331,6 +331,9 @@ nav {
   line-height: 0.9;
   letter-spacing: 0.02em;
   color: var(--text);
+  /* Halo branco: destaca o nome e o separa das engrenagens do fundo, que antes
+     apareciam por trás das letras e "sujavam" a leitura. */
+  text-shadow: 0 2px 24px rgba(255,255,255,0.92), 0 0 3px rgba(255,255,255,0.95);
 }
 .hero-title .accent { color: var(--accent); }
 
@@ -396,13 +399,11 @@ nav {
 }
 
 .hero-scroll {
-  position: absolute;
-  /* Centraliza SEM transform: a animação fadeUp abaixo anima o transform e,
-     com translateX(-50%), o final da animação descentralizava a chamada. */
-  left: 0; right: 0;
-  margin: 0 auto;
-  width: fit-content;
-  bottom: 1.6rem;
+  /* No FLUXO (não mais absoluta): fica abaixo do conteúdo, centralizada, sem
+     cair por cima do "Emergências e paradas programadas" — era o que estava
+     embolando as descrições no rodapé do hero. */
+  align-self: center;
+  margin-top: 2.2rem;
   z-index: 2;
   display: flex;
   flex-direction: column;
