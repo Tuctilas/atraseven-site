@@ -298,8 +298,10 @@ nav {
   background: radial-gradient(closest-side, var(--accent2) 0%, var(--accent2) 45%, transparent 100%);
 }
 
-/* Conteúdo do hero: PARADO e centralizado (o movimento é só do fundo/redutor). */
-.hero-content { position: relative; z-index: 2; max-width: 960px; margin: 0 auto; text-align: center; }
+/* Conteúdo do hero: PARADO e centralizado (o movimento é só do fundo/redutor).
+   max-width maior para o nome ATRA SEVEN crescer até mais perto das laterais
+   sem quebrar em duas linhas. */
+.hero-content { position: relative; z-index: 2; max-width: 1200px; margin: 0 auto; text-align: center; }
 
 .hero-eyebrow {
   font-family: var(--font-cond);
@@ -327,7 +329,9 @@ nav {
 }
 .hero-title {
   font-family: var(--font-display);
-  font-size: clamp(5rem, 12vw, 10rem);
+  /* Maior: cresce mais com a tela (13vw) e vai até 12rem no desktop, ocupando
+     mais as laterais para dar destaque ao nome da empresa. */
+  font-size: clamp(5rem, 13vw, 12rem);
   line-height: 0.9;
   letter-spacing: 0.02em;
   color: var(--text);
@@ -338,8 +342,8 @@ nav {
 .hero-title .accent { color: var(--accent); }
 
 .hero-gear-svg {
-  width: clamp(70px, 10vw, 120px);
-  height: clamp(70px, 10vw, 120px);
+  width: clamp(78px, 11vw, 145px);
+  height: clamp(78px, 11vw, 145px);
   flex-shrink: 0;
   filter: drop-shadow(0 0 18px rgba(92,205,167,0.35));
 }
