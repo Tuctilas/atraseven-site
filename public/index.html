@@ -125,10 +125,20 @@
     <li><a href="#contato">Contato</a></li>
     <li class="nav-links-cta"><a href="#contato">Fale Conosco</a></li>
   </ul>
-  <a class="nav-cta" href="#contato">Fale Conosco</a>
-  <button class="nav-toggle" id="nav-toggle" aria-label="Abrir menu" aria-expanded="false" aria-controls="nav-links">
-    <span></span><span></span><span></span>
-  </button>
+  <div class="nav-right">
+    <a class="nav-cta" href="#contato">Fale Conosco</a>
+    <!-- Ícone de usuário (padrão dos sites): entrada da área administrativa.
+         Mais fácil de achar que o link do rodapé. Continua protegido por login. -->
+    <a class="nav-account" href="adm.html" rel="nofollow" aria-label="Área administrativa" title="Área administrativa">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="8" r="4"/>
+        <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+      </svg>
+    </a>
+    <button class="nav-toggle" id="nav-toggle" aria-label="Abrir menu" aria-expanded="false" aria-controls="nav-links">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
 </nav>
 
 <section class="hero" id="home">
@@ -192,32 +202,27 @@
   </div>
 
   <!-- Chamada de rolagem: convida o visitante a descer para o conteúdo. O
-       ícone é um paquímetro (combina com a marca): o cursor desliza de leve e
-       o conjunto balança para baixo, puxando o olhar para descer. -->
+       ícone é uma engrenagem da marca com uma seta para baixo dentro — combina
+       com a empresa e lê claramente como "descer". A engrenagem fica parada;
+       o conjunto balança de leve para baixo, puxando o olhar. -->
   <a class="hero-scroll" href="#sobre" aria-label="Rolar para conhecer a empresa">
     <span class="hero-scroll-label">Conheça a empresa</span>
-    <svg class="hero-scroll-caliper" viewBox="0 0 72 50" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
-      <!-- barra graduada -->
-      <rect x="8" y="19" width="58" height="8" rx="2" stroke="currentColor" stroke-width="2"/>
-      <!-- ticks da escala -->
-      <line x1="16" y1="19" x2="16" y2="14" stroke="currentColor" stroke-width="1.6"/>
-      <line x1="24" y1="19" x2="24" y2="15.5" stroke="currentColor" stroke-width="1.4"/>
-      <line x1="32" y1="19" x2="32" y2="14" stroke="currentColor" stroke-width="1.6"/>
-      <line x1="40" y1="19" x2="40" y2="15.5" stroke="currentColor" stroke-width="1.4"/>
-      <line x1="48" y1="19" x2="48" y2="14" stroke="currentColor" stroke-width="1.6"/>
-      <line x1="56" y1="19" x2="56" y2="15.5" stroke="currentColor" stroke-width="1.4"/>
-      <!-- haste de profundidade, apontando para baixo -->
-      <line x1="66" y1="27" x2="66" y2="45" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-      <!-- mordentes FIXOS (à esquerda) -->
-      <path d="M12 8 v10" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/>
-      <path d="M12 27 v14" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/>
-      <!-- CURSOR deslizante (grupo animado) -->
-      <g class="caliper-slider">
-        <rect x="23" y="15" width="15" height="16" rx="2" fill="currentColor" fill-opacity="0.14" stroke="currentColor" stroke-width="2"/>
-        <circle cx="30.5" cy="23" r="2.4" fill="currentColor"/>
-        <path d="M27 8 v9" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/>
-        <path d="M27 31 v10" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/>
+    <svg class="hero-scroll-icon" viewBox="0 0 48 48" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+      <!-- corpo da engrenagem -->
+      <circle cx="24" cy="24" r="15" stroke="currentColor" stroke-width="2"/>
+      <!-- dentes -->
+      <g stroke="currentColor" stroke-width="3" stroke-linecap="round">
+        <line x1="24" y1="9" x2="24" y2="5.5"/>
+        <line x1="39" y1="24" x2="42.5" y2="24"/>
+        <line x1="24" y1="39" x2="24" y2="42.5"/>
+        <line x1="9" y1="24" x2="5.5" y2="24"/>
+        <line x1="34.6" y1="13.4" x2="37.1" y2="10.9"/>
+        <line x1="34.6" y1="34.6" x2="37.1" y2="37.1"/>
+        <line x1="13.4" y1="34.6" x2="10.9" y2="37.1"/>
+        <line x1="13.4" y1="13.4" x2="10.9" y2="10.9"/>
       </g>
+      <!-- seta para baixo -->
+      <path d="M24 16 V29 M18.5 24 L24 30 L29.5 24" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
   </a>
 </section>

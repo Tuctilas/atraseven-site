@@ -131,8 +131,10 @@ nav {
   justify-content: space-between;
   padding: 1.1rem 3rem;
   border-bottom: 1px solid var(--border);
-  background: rgba(255,255,255,0.82);
-  backdrop-filter: blur(16px);
+  /* Sem backdrop-filter: a barra é fixa, então o desfoque teria de ser
+     refeito sobre tudo que passa por baixo a cada quadro de rolagem. Um
+     branco um pouco mais opaco dá a mesma leitura sem custo de GPU. */
+  background: rgba(255,255,255,0.92);
 }
 
 .nav-logo {
@@ -185,6 +187,26 @@ nav {
   transition: opacity 0.2s;
 }
 .nav-cta:hover { opacity: 0.85; }
+
+/* Bloco da direita da barra: CTA + ícone de usuário + hambúrguer. */
+.nav-right { display: flex; align-items: center; gap: 1rem; }
+
+/* Ícone de usuário (entrada da área ADM). Silhueta clássica num botão redondo. */
+.nav-account {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  text-decoration: none;
+  flex-shrink: 0;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+}
+.nav-account:hover { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
+.nav-account svg { width: 20px; height: 20px; }
 
 /* ── HAMBÚRGUER (mobile) ── */
 .nav-toggle {
@@ -248,15 +270,24 @@ nav {
   animation: gridDrift 30s linear infinite;
   opacity: 0.4;
 }
+/* Halo de fundo SEM filter: blur(). Um desfoque de 80px sobre um círculo de
+   600px, ainda por cima animado em laço infinito, obriga a GPU a refazer o
+   borrão a cada quadro para sempre — mesma armadilha descrita lá em cima no
+   #bg-canvas, e o que travava o driver de vídeo ao abrir a página. O mesmo
+   halo sai de um radial-gradient: é pintado uma vez e depois não custa nada. */
 .hero-orb {
   position: absolute;
   border-radius: 50%;
-  filter: blur(80px);
   opacity: 0.11;
-  animation: orbFloat 8s ease-in-out infinite alternate;
 }
-.hero-orb.gold { width:600px; height:600px; background:var(--accent); top:-100px; right:0; }
-.hero-orb.red  { width:400px; height:400px; background:var(--accent2); bottom:10%; left:10%; animation-delay:-3s; }
+.hero-orb.gold {
+  width:600px; height:600px; top:-100px; right:0;
+  background: radial-gradient(closest-side, var(--accent) 0%, var(--accent) 45%, transparent 100%);
+}
+.hero-orb.red {
+  width:400px; height:400px; bottom:10%; left:10%;
+  background: radial-gradient(closest-side, var(--accent2) 0%, var(--accent2) 45%, transparent 100%);
+}
 
 .hero-content { position: relative; z-index: 2; max-width: 960px; }
 
@@ -371,33 +402,23 @@ nav {
 }
 .hero-scroll:hover { color: var(--text); }
 
-/* Paquímetro da chamada de rolagem. Duas animações leves (só transform/opacity,
-   num ícone de 40px → praticamente de graça pra GPU, não pesa a página):
-   o conjunto balança para baixo (convida a descer) e o cursor desliza de leve
-   (dá vida ao instrumento). */
-.hero-scroll-caliper {
+/* Ícone da chamada de rolagem: engrenagem da marca com uma seta para baixo.
+   Uma animação leve (só transform/opacity, num ícone de 40px → praticamente de
+   graça pra GPU): o conjunto balança de leve para baixo, convidando a descer.
+   A engrenagem NÃO gira. */
+.hero-scroll-icon {
   width: 40px;
-  height: auto;
+  height: 40px;
   color: var(--accent);
-  animation: caliperBob 2.4s ease-in-out infinite;
+  animation: scrollNudge 1.9s ease-in-out infinite;
 }
-.hero-scroll-caliper .caliper-slider {
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: caliperSlide 2.4s ease-in-out infinite;
-}
-@keyframes caliperBob {
-  0%, 100% { transform: translateY(0);   opacity: 0.78; }
+@keyframes scrollNudge {
+  0%, 100% { transform: translateY(0);   opacity: 0.72; }
   50%      { transform: translateY(5px); opacity: 1; }
-}
-@keyframes caliperSlide {
-  0%, 100% { transform: translateX(0); }
-  50%      { transform: translateX(4px); }
 }
 /* Sem movimento para quem pede menos animação. */
 @media (prefers-reduced-motion: reduce) {
-  .hero-scroll-caliper,
-  .hero-scroll-caliper .caliper-slider { animation: none; }
+  .hero-scroll-icon { animation: none; }
 }
 
 /* ── BUTTONS ── */
